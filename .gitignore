@@ -1,0 +1,6 @@
+/.cashe
+/.claude
+/build
+
+sdkconfig
+sdkconfig.old
