@@ -15,12 +15,12 @@
 
 | モジュール | ファイル | 状態 |
 |-----------|--------|------|
-| USB MIDI | usb_midi.cpp/.h | 未着手 |
-| ADCスライダー | analog_input.cpp/.h | 未着手 |
-| ボタン | button.cpp/.h | 未着手 |
+| USB MIDI | usb_midi.cpp/.h | 完了 |
+| ADCスライダー | analog_input.cpp/.h | 完了 |
+| ボタン | button.cpp/.h | 完了 |
+| コントローラー本体 | controller.cpp/.h | 完了 |
 | LED制御 | led.cpp/.h | 未着手 |
 | ディスプレイ | display_manager.cpp/.h | 未着手 |
-| コントローラー本体 | controller.cpp/.h | 未着手 |
 | Ableton Remote Script | remote-script/ | 未着手 |
 
 ---
@@ -29,7 +29,7 @@
 
 - コードはC++、ESP-IDF v5.x APIを使うこと
 - `adc_legacy` APIは使用禁止。`adc_oneshot` + `adc_cali` を使うこと
-- TinyUSBのMIDIクラスドライバを使うこと（自前MIDI実装禁止）
+- TinyUSBのMIDIクラスドライバを使うこと（自前MIDI実装禁止）。`esp_tinyusb` は組み込みコンポーネントではないため `main/idf_component.yml` で宣言すること（CMakeLists.txt の REQUIRES には書かない）
 - ディスプレイは `esp_lcd` コンポーネントを使うこと（外部ライブラリ禁止）
 - ADC値は `>> 5` で7bit MIDIに変換し、deadband=4で変化検出すること
 - ESP32-S3はADC1（GPIO1–10）のみ使うこと
