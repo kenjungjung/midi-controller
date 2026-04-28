@@ -5,6 +5,8 @@
 ## 現在のフェーズ
 
 **Phase 1 実装中** → [docs/design/phase1_usb_midi.md](docs/design/phase1_usb_midi.md) を読むこと
+- アーキテクチャ（クラス図・タスク構成・シーケンス図）: [phase1_arch.md](docs/design/phase1_arch.md)
+- ソフトウェア設計（config.h・初期化・テスト）: [phase1_sw_design.md](docs/design/phase1_sw_design.md)
 （他のPhaseファイルは不要）
 
 ---
