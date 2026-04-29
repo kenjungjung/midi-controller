@@ -7,17 +7,16 @@ static const char* TAG = "LedManager";
 
 LedManager::LedManager() {
     led_strip_config_t strip_cfg = {
-        .strip_gpio_num          = static_cast<int>(PIN_LED_DATA),
-        .max_leds                = static_cast<uint32_t>(NUM_LEDS),
-        .led_model               = LED_MODEL_WS2812,             ///< PL9823-F5 は WS2812B 互換タイミング
-        .color_component_format  = LED_STRIP_COLOR_COMPONENT_FMT_GRB, ///< PL9823-F5 は GRB 順
-        .flags                   = { .invert_out = false },
+        .strip_gpio_num = static_cast<int>(PIN_LED_DATA),
+        .max_leds       = static_cast<uint32_t>(NUM_LEDS),
+        // led_model / color_component_format は 0 のまま（WS2812デフォルト）
+        .flags          = { .invert_out = false },
     };
     led_strip_rmt_config_t rmt_cfg = {
-        .clk_src        = RMT_CLK_SRC_DEFAULT,
-        .resolution_hz  = 10 * 1000 * 1000, ///< 10 MHz → 0.1 μs 分解能
+        .clk_src           = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz     = 10 * 1000 * 1000,
         .mem_block_symbols = 64,
-        .flags          = { .with_dma = false },
+        .flags             = { .with_dma = false },
     };
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_cfg, &rmt_cfg, &strip_));
     ESP_LOGI(TAG, "init OK: GPIO%d, %d LED(s)", PIN_LED_DATA, NUM_LEDS);
@@ -32,11 +31,14 @@ LedManager::~LedManager() {
 
 void LedManager::set_color(int index, RgbColor color) {
     if (index < 0 || index >= NUM_LEDS) return;
-    led_strip_set_pixel(strip_, static_cast<uint32_t>(index), color.r, color.g, color.b);
+    esp_err_t err = led_strip_set_pixel(strip_, static_cast<uint32_t>(index),
+                                         color.r, color.g, color.b);
+    if (err != ESP_OK) ESP_LOGE(TAG, "set_pixel failed: %s", esp_err_to_name(err));
 }
 
 void LedManager::refresh() {
-    led_strip_refresh(strip_);
+    esp_err_t err = led_strip_refresh(strip_);
+    if (err != ESP_OK) ESP_LOGE(TAG, "refresh failed: %s", esp_err_to_name(err));
 }
 
 void LedManager::clear() {

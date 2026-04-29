@@ -70,14 +70,12 @@ extern "C" void app_main(void) {
     static StubDisplay      display;
 #endif
 
-    // LED テスト: 赤→緑→青→消灯 を各500ms
-#ifndef USE_STUBS
-    for (RgbColor c : {RgbColor{64,0,0}, {0,64,0}, {0,0,64}, {0,0,0}}) {
-        led.set_color(0, c);
+    // LED 単色テスト: 赤2秒→消灯
+    #ifndef USE_STUBS
+        led.set_color(0, {64, 0, 0});
         led.refresh();
-        vTaskDelay(pdMS_TO_TICKS(500));
-    }
-#endif
+        vTaskDelay(pdMS_TO_TICKS(2000));
+    #endif
 
     midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
 

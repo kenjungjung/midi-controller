@@ -19,8 +19,8 @@ constexpr uint8_t CC_FADER_1    = 1;   ///< フェーダー CC: 1〜NUM_FADERS
 constexpr uint8_t CC_KNOB_1     = 20;  ///< ノブ CC: 20〜(20+NUM_KNOBS-1)
 constexpr uint8_t NOTE_BUTTON_1 = 36;  ///< ボタン Note: 36〜(36+NUM_BUTTONS-1)
 constexpr int     DEADBAND      = 4;   ///< minimum CC change threshold
-constexpr int     FADER_RAW_MIN = 0;    ///< fader bottom (measured)
-constexpr int     FADER_RAW_MAX = 3900; ///< fader top (measured)
+constexpr int     FADER_RAW_MIN = 400;  ///< fader bottom (measured)
+constexpr int     FADER_RAW_MAX = 3700; ///< fader top (measured)
 
 constexpr int MIDI_QUEUE_LEN = 32;
 constexpr int STACK_USB      = 4096;
@@ -38,7 +38,7 @@ constexpr int NUM_FADERS  = 1;  ///< フェーダー本数（Phase4 で 12）
 constexpr int NUM_KNOBS   = 3;  ///< ノブ本数（Bank1/2 共通）
 constexpr int NUM_BUTTONS = 1;  ///< ボタン本数（Phase3 で 10）
 
-constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_4; ///< PL9823-F5 data line (RMT)
+constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_5; ///< PL9823-F5 data line (RMT) ※GPIO4損傷疑いで変更
 constexpr int        NUM_LEDS     = 1;           ///< PL9823-F5 count
 
 // #define USE_STUBS  // uncomment to replace hardware with stubs
