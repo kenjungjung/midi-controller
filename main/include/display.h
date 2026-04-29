@@ -21,10 +21,10 @@ public:
 };
 
 /** @brief SSD1306 128x64 OLED: MIDI イベントを 8 行スクロールログで表示する */
-class SSD1306Display : public IDisplay {
+class Display : public IDisplay {
 public:
-    SSD1306Display();
-    ~SSD1306Display() override;
+    Display();
+    ~Display() override;
 
     void push_event(const MidiEvent& ev, bool outgoing) override;
     void render() override;

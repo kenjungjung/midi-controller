@@ -4,11 +4,11 @@ set(SOURCES
     src/button.cpp
     src/usb_midi.cpp
     src/controller.cpp
-    #src/display.cpp
+    src/display.cpp
 )
 
 idf_component_register(
     SRCS ${SOURCES}
     INCLUDE_DIRS "include"
-    REQUIRES driver esp_adc
+    REQUIRES driver esp_adc esp_driver_i2c
 )

@@ -6,7 +6,7 @@
 #include "analog_input.h"
 #include "button.h"
 #include "midi_sender.h"
-// #include "display.h"
+#include "display.h"
 
 /** @brief ADC・ボタン読み取りと MIDI 送信・表示更新を管理するコントローラー
  *
@@ -23,7 +23,7 @@ public:
      *  @param midi_queue タスク間キュー（main.cpp で xQueueCreate したもの）
      */
     Controller(IAnalogInput& input, IButton& button,
-               IMidiSender& sender, /*IDisplay& display,*/ QueueHandle_t midi_queue);
+               IMidiSender& sender, IDisplay& display, QueueHandle_t midi_queue);
 
     /** @brief InputTask のメインループ: 10ms ごとに ADC とボタンを読む */
     void input_loop();
@@ -44,7 +44,7 @@ private:
     IAnalogInput&  input_;
     IButton&       button_;
     IMidiSender&   sender_;
-    // IDisplay&      display_;
+    IDisplay&      display_;
     QueueHandle_t  midi_queue_;
 
     uint8_t prev_cc_;   ///< 直前の CC 値。0xFF = 未送信（強制送信フラグ）

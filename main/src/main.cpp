@@ -35,7 +35,7 @@ static void midi_task(void* /*arg*/) {
     g_controller->midi_loop();
 }
 
-/*
+
 static void display_task(void* arg) {
     IDisplay* display = static_cast<IDisplay*>(arg);
     while (true) {
@@ -43,7 +43,7 @@ static void display_task(void* arg) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-*/
+
 
 extern "C" void app_main(void) {
     const tinyusb_config_t tusb_cfg = {
@@ -64,7 +64,7 @@ extern "C" void app_main(void) {
     static AdcAnalogInput  fader(ADC_UNIT_FADER, ADC_CH_FADER_1, ADC_ATTEN);
     static GpioButton      button(PIN_BUTTON_1);
     static UsbMidiSender   sender;
-    // static SSD1306Display  display;
+    static Display  display;
 #else
     static StubAnalogInput fader;
     static StubButton      button;
@@ -73,10 +73,10 @@ extern "C" void app_main(void) {
 #endif
 
     midi_queue   = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
-    static Controller controller(fader, button, sender, /*display,*/ midi_queue);
+    static Controller controller(fader, button, sender, display, midi_queue);
     g_controller = &controller;
 
     xTaskCreatePinnedToCore(input_task,   "input",   STACK_INPUT,   nullptr,  PRIO_INPUT,   nullptr, CORE_INPUT);
     xTaskCreatePinnedToCore(midi_task,    "midi",    STACK_MIDI,    nullptr,  PRIO_MIDI,    nullptr, CORE_USB);
-    // xTaskCreatePinnedToCore(display_task, "display", STACK_DISPLAY, &display, PRIO_DISPLAY, nullptr, CORE_INPUT);
+    xTaskCreatePinnedToCore(display_task, "display", STACK_DISPLAY, &display, PRIO_DISPLAY, nullptr, CORE_INPUT);
 }

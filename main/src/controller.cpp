@@ -7,8 +7,8 @@
 static const char* TAG = "Controller";
 
 Controller::Controller(IAnalogInput& input, IButton& button,
-                       IMidiSender& sender, /*IDisplay& display,*/ QueueHandle_t midi_queue)
-    : input_(input), button_(button), sender_(sender), /*display_(display),*/
+                       IMidiSender& sender, IDisplay& display, QueueHandle_t midi_queue)
+    : input_(input), button_(button), sender_(sender), display_(display),
       midi_queue_(midi_queue), prev_cc_(0xFF), prev_btn_(false)
 {}
 
@@ -61,15 +61,15 @@ void Controller::midi_loop() {
             switch (ev.type) {
                 case MidiEvent::Type::CC:
                     sender_.send_cc(ev.channel, ev.number, ev.value);
-                    // display_.push_event(ev, true);
+                    display_.push_event(ev, true);
                     break;
                 case MidiEvent::Type::NOTE_ON:
                     sender_.send_note_on(ev.channel, ev.number, ev.value);
-                    // display_.push_event(ev, true);
+                    display_.push_event(ev, true);
                     break;
                 case MidiEvent::Type::NOTE_OFF:
                     sender_.send_note_off(ev.channel, ev.number);
-                    // display_.push_event(ev, true);
+                    display_.push_event(ev, true);
                     break;
             }
         }

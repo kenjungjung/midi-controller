@@ -107,7 +107,7 @@ static const uint8_t k_font8x8[][8] = {
 
 // ---------------------------------------------------------------------------
 
-SSD1306Display::SSD1306Display()
+Display::Display()
 {
     mutex_ = xSemaphoreCreateMutex();
 
@@ -158,20 +158,20 @@ SSD1306Display::SSD1306Display()
     ESP_LOGI(TAG, "SSD1306 initialized");
 }
 
-SSD1306Display::~SSD1306Display()
+Display::~Display()
 {
     if (dev_)   i2c_master_bus_rm_device(dev_);
     if (bus_)   i2c_del_master_bus(bus_);
     if (mutex_) vSemaphoreDelete(mutex_);
 }
 
-void SSD1306Display::send_cmd(uint8_t cmd)
+void Display::send_cmd(uint8_t cmd)
 {
     uint8_t buf[2] = {0x00, cmd};
     i2c_master_transmit(dev_, buf, sizeof(buf), 50);
 }
 
-void SSD1306Display::send_data(const uint8_t* data, size_t len)
+void Display::send_data(const uint8_t* data, size_t len)
 {
     uint8_t buf[129];
     buf[0] = 0x40;
@@ -179,14 +179,14 @@ void SSD1306Display::send_data(const uint8_t* data, size_t len)
     i2c_master_transmit(dev_, buf, len + 1, 100);
 }
 
-void SSD1306Display::set_cursor(uint8_t col, uint8_t page)
+void Display::set_cursor(uint8_t col, uint8_t page)
 {
     send_cmd(0xB0 | (page & 0x07));
     send_cmd(0x00 | (col & 0x0F));
     send_cmd(0x10 | (col >> 4));
 }
 
-void SSD1306Display::draw_line(uint8_t page, const char* str)
+void Display::draw_line(uint8_t page, const char* str)
 {
     set_cursor(0, page);
     uint8_t pixels[128] = {};
@@ -205,7 +205,7 @@ void SSD1306Display::draw_line(uint8_t page, const char* str)
     send_data(pixels, sizeof(pixels));
 }
 
-void SSD1306Display::format_event(const MidiEvent& ev, bool outgoing, char* out)
+void Display::format_event(const MidiEvent& ev, bool outgoing, char* out)
 {
     const char* dir = outgoing ? "->" : "<-";
     switch (ev.type) {
@@ -221,7 +221,7 @@ void SSD1306Display::format_event(const MidiEvent& ev, bool outgoing, char* out)
     }
 }
 
-void SSD1306Display::push_event(const MidiEvent& ev, bool outgoing)
+void Display::push_event(const MidiEvent& ev, bool outgoing)
 {
     char line[COLS + 1];
     format_event(ev, outgoing, line);
@@ -233,7 +233,7 @@ void SSD1306Display::push_event(const MidiEvent& ev, bool outgoing)
     xSemaphoreGive(mutex_);
 }
 
-void SSD1306Display::render()
+void Display::render()
 {
     xSemaphoreTake(mutex_, portMAX_DELAY);
     if (!dirty_) {
