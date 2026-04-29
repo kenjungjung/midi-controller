@@ -9,7 +9,8 @@ LedManager::LedManager() {
     led_strip_config_t strip_cfg = {
         .strip_gpio_num = static_cast<int>(PIN_LED_DATA),
         .max_leds       = static_cast<uint32_t>(NUM_LEDS),
-        // led_model / color_component_format は 0 のまま（WS2812デフォルト）
+        .led_model      = LED_MODEL_WS2812,
+        .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
         .flags          = { .invert_out = false },
     };
     led_strip_rmt_config_t rmt_cfg = {
