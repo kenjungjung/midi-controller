@@ -46,18 +46,13 @@ static void display_task(void* arg) {
 
 
 extern "C" void app_main(void) {
-    const tinyusb_config_t tusb_cfg = {
-        .task = {
-            .size     = STACK_USB,
-            .priority = PRIO_USB,
-            .xCoreID  = CORE_USB,
-        },
-        .descriptor = {
-            .full_speed_config = desc_fs_cfg,
-        },
-        .event_cb  = usb_event_cb,
-        .event_arg = nullptr,
-    };
+    tinyusb_config_t tusb_cfg = {};
+    tusb_cfg.task.size              = STACK_USB;
+    tusb_cfg.task.priority          = PRIO_USB;
+    tusb_cfg.task.xCoreID           = CORE_USB;
+    tusb_cfg.descriptor.full_speed_config = desc_fs_cfg;
+    tusb_cfg.event_cb               = usb_event_cb;
+    tusb_cfg.event_arg              = nullptr;
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
 #ifndef USE_STUBS

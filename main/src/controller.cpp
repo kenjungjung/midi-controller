@@ -17,7 +17,9 @@ void Controller::reset_prev_cc() {
 }
 
 uint8_t Controller::to_midi_cc(uint16_t raw) {
-    return static_cast<uint8_t>(raw >> 5);
+    int clamped = raw < FADER_RAW_MIN ? FADER_RAW_MIN
+                : raw > FADER_RAW_MAX ? FADER_RAW_MAX : raw;
+    return static_cast<uint8_t>((clamped - FADER_RAW_MIN) * 127 / (FADER_RAW_MAX - FADER_RAW_MIN));
 }
 
 void Controller::input_loop() {

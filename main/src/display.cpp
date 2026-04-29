@@ -156,6 +156,7 @@ Display::Display()
     }
 
     ESP_LOGI(TAG, "SSD1306 initialized");
+    draw_line(0, TITLE);
 }
 
 Display::~Display()
@@ -205,29 +206,30 @@ void Display::draw_line(uint8_t page, const char* str)
     send_data(pixels, sizeof(pixels));
 }
 
-void Display::format_event(const MidiEvent& ev, bool outgoing, char* out)
+std::array<char, Display::COLS + 1> Display::format_event(const MidiEvent& ev, bool outgoing)
 {
+    std::array<char, Display::COLS + 1> out{};
     const char* dir = outgoing ? "->" : "<-";
     switch (ev.type) {
         case MidiEvent::Type::CC:
-            snprintf(out, COLS + 1, "CC%3d %3d     %s", ev.number, ev.value, dir);
+            snprintf(out.data(), out.size(), "CC%3d %3d %s", ev.number, ev.value, dir);
             break;
         case MidiEvent::Type::NOTE_ON:
-            snprintf(out, COLS + 1, "N %3d ON      %s", ev.number, dir);
+            snprintf(out.data(), out.size(), "N %3d ON %s", ev.number, dir);
             break;
         case MidiEvent::Type::NOTE_OFF:
-            snprintf(out, COLS + 1, "N %3d OFF     %s", ev.number, dir);
+            snprintf(out.data(), out.size(), "N %3d OFF %s", ev.number, dir);
             break;
     }
+    return out;
 }
 
 void Display::push_event(const MidiEvent& ev, bool outgoing)
 {
-    char line[COLS + 1];
-    format_event(ev, outgoing, line);
+    auto line = format_event(ev, outgoing);
 
     xSemaphoreTake(mutex_, portMAX_DELAY);
-    memcpy(log_[head_], line, COLS + 1);
+    memcpy(log_[head_], line.data(), COLS + 1);
     head_  = (head_ + 1) % LINES;
     dirty_ = true;
     xSemaphoreGive(mutex_);
@@ -242,12 +244,12 @@ void Display::render()
     }
     char snapshot[LINES][COLS + 1];
     for (int i = 0; i < LINES; i++) {
-        int idx = (head_ + i) % LINES;
+        int idx = (head_ - 1 - i + LINES) % LINES;
         memcpy(snapshot[i], log_[idx], COLS + 1);
     }
     dirty_ = false;
     xSemaphoreGive(mutex_);
 
     for (int i = 0; i < LINES; i++)
-        draw_line(i, snapshot[i]);
+        draw_line(i + 1, snapshot[i]);
 }

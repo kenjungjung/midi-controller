@@ -4,6 +4,7 @@
 #include "freertos/semphr.h"
 #include "driver/i2c_master.h"
 #include "midi_event.h"
+#include <array>
 
 /** @brief OLED 表示の抽象インターフェース */
 class IDisplay {
@@ -30,8 +31,9 @@ public:
     void render() override;
 
 private:
-    static constexpr uint8_t LINES = 8;
-    static constexpr uint8_t COLS  = 16;
+    static constexpr uint8_t LINES      = 7;
+    static constexpr uint8_t COLS       = 16;
+    static constexpr char    TITLE[]    = "MIDI  VAL      ";
 
     i2c_master_bus_handle_t bus_   = nullptr;
     i2c_master_dev_handle_t dev_   = nullptr;
@@ -47,7 +49,7 @@ private:
     void draw_line(uint8_t page, const char* str);
 
     /** @brief MidiEvent を 16 文字の表示行にフォーマットする */
-    static void format_event(const MidiEvent& ev, bool outgoing, char* out);
+    static std::array<char, Display::COLS + 1> format_event(const MidiEvent& ev, bool outgoing);
 };
 
 /** @brief テスト用スタブ */

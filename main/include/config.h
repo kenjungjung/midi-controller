@@ -15,6 +15,8 @@ constexpr uint8_t MIDI_CHANNEL  = 1;
 constexpr uint8_t CC_FADER_1    = 1;
 constexpr uint8_t NOTE_BUTTON_1 = 36;
 constexpr int     DEADBAND      = 4;   ///< minimum CC change threshold
+constexpr int     FADER_RAW_MIN = 0;    ///< fader bottom (measured)
+constexpr int     FADER_RAW_MAX = 3900; ///< fader top (measured)
 
 constexpr int MIDI_QUEUE_LEN = 32;
 constexpr int STACK_USB      = 4096;
