@@ -10,18 +10,22 @@
 #include "usb_midi.h"
 #include "display.h"
 #include "controller.h"
+#include "esp_log.h"
 
 static QueueHandle_t  midi_queue;
 static Controller*    g_controller;
 
 static void usb_event_cb(tinyusb_event_t* event, void* /*arg*/)
 {
+    ESP_LOGI("usb_event_cb", "%d", event->id);
     switch (event->id) {
         case TINYUSB_EVENT_DETACHED:
             if (midi_queue) xQueueReset(midi_queue);
+            if (g_controller) g_controller->notify_connected(false);
             break;
         case TINYUSB_EVENT_ATTACHED:
             if (g_controller) g_controller->reset_prev_cc();
+            if (g_controller) g_controller->notify_connected(true);
             break;
         default:
             break;
@@ -50,7 +54,7 @@ extern "C" void app_main(void) {
     tusb_cfg.task.priority          = PRIO_USB;
     tusb_cfg.task.xCoreID           = CORE_USB;
     tusb_cfg.descriptor.full_speed_config = desc_fs_cfg;
-    tusb_cfg.event_cb               = usb_event_cb;
+    tusb_cfg.event_cb               = usb_event_cb; // これ反応しない。。後でやる
     tusb_cfg.event_arg              = nullptr;
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
@@ -69,13 +73,6 @@ extern "C" void app_main(void) {
     static UsbMidiSender    sender;
     static StubDisplay      display;
 #endif
-
-    // LED 単色テスト: 赤2秒→消灯
-    #ifndef USE_STUBS
-        led.set_color(0, {64, 0, 0});
-        led.refresh();
-        vTaskDelay(pdMS_TO_TICKS(2000));
-    #endif
 
     midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
 

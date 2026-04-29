@@ -19,6 +19,9 @@ public:
 
     /** @brief 画面を更新する（DisplayTask から 100ms 周期で呼ぶ） */
     virtual void render() = 0;
+
+    /** @brief タイトル行を更新する（USB 接続状態変化時に呼ぶ） */
+    virtual void set_title(const char* title) = 0;
 };
 
 /** @brief SSD1306 128x64 OLED: MIDI イベントを 8 行スクロールログで表示する */
@@ -29,11 +32,14 @@ public:
 
     void push_event(const MidiEvent& ev, bool outgoing) override;
     void render() override;
+    void set_title(const char* title) override;
+
+    static constexpr char TITLE[]      = "   Tp NUM VAL      ";
+    static constexpr char DISCONECTED[] = "  DISCONNECTED";
 
 private:
-    static constexpr uint8_t LINES      = 7;
-    static constexpr uint8_t COLS       = 16;
-    static constexpr char    TITLE[]    = "MIDI  VAL      ";
+    static constexpr uint8_t LINES = 7;
+    static constexpr uint8_t COLS  = 16;
 
     i2c_master_bus_handle_t bus_   = nullptr;
     i2c_master_dev_handle_t dev_   = nullptr;
@@ -57,4 +63,5 @@ class StubDisplay : public IDisplay {
 public:
     void push_event(const MidiEvent&, bool) override {}
     void render() override {}
+    void set_title(const char*) override {}
 };

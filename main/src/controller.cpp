@@ -20,6 +20,10 @@ void Controller::reset_prev_cc() {
     prev_knob_cc_.fill(0xFF);
 }
 
+void Controller::notify_connected(bool connected) {
+    cfg_.display->set_title(connected ? Display::TITLE : Display::DISCONECTED);
+}
+
 uint8_t Controller::to_midi_cc(uint16_t raw) {
     int clamped = raw < FADER_RAW_MIN ? FADER_RAW_MIN
                 : raw > FADER_RAW_MAX ? FADER_RAW_MAX : raw;
@@ -27,8 +31,15 @@ uint8_t Controller::to_midi_cc(uint16_t raw) {
 }
 
 void Controller::input_loop() {
+    bool prev_connected = false;
     while (true) {
-        if (cfg_.sender->is_connected()) {
+        // ここでポーリングせず、usb_event_cbでやるべき
+        bool connected = cfg_.sender->is_connected();
+        if (connected != prev_connected) {
+            notify_connected(connected);
+            prev_connected = connected;
+        }
+        if (connected) {
             // フェーダー
             for (int i = 0; i < NUM_FADERS; ++i) {
                 uint8_t new_cc = to_midi_cc(cfg_.faders[i]->read());

@@ -156,7 +156,6 @@ Display::Display()
     }
 
     ESP_LOGI(TAG, "SSD1306 initialized");
-    draw_line(0, TITLE);
 }
 
 Display::~Display()
@@ -222,6 +221,14 @@ std::array<char, Display::COLS + 1> Display::format_event(const MidiEvent& ev, b
             break;
     }
     return out;
+}
+
+void Display::set_title(const char* title)
+{
+    xSemaphoreTake(mutex_, portMAX_DELAY);
+    draw_line(0, title);
+    xSemaphoreGive(mutex_);
+    ESP_LOGI("title", "%s", title);
 }
 
 void Display::push_event(const MidiEvent& ev, bool outgoing)

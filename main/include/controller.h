@@ -47,6 +47,9 @@ public:
     /** @brief USB 再接続時に呼ぶ: 次のポーリングで全CC を強制再送信する */
     void reset_prev_cc();
 
+    /** @brief USB 接続状態変化時に呼ぶ: タイトル行を更新する */
+    void notify_connected(bool connected);
+
     /** @brief 12bit ADC 値を 7bit MIDI CC 値に変換する
      *  @param raw  ADC スケール値（0-4095）
      *  @return     MIDI CC 値（0-127）

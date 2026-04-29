@@ -7,11 +7,11 @@
 static const char* TAG = "UsbMidi";
 
 bool UsbMidiSender::is_connected() const {
-    return tud_mounted();
+    return tud_ready();
 }
 
 void UsbMidiSender::send_cc(uint8_t ch, uint8_t cc, uint8_t val) {
-    if (!tud_mounted()) return;
+    if (!is_connected()) return;
 
     // MIDI CC: status = 0xB0 | (ch-1)
     uint8_t msg[3] = {
@@ -26,7 +26,7 @@ void UsbMidiSender::send_cc(uint8_t ch, uint8_t cc, uint8_t val) {
 }
 
 void UsbMidiSender::send_note_on(uint8_t ch, uint8_t note, uint8_t vel) {
-    if (!tud_mounted()) return;
+    if (!is_connected()) return;
 
     uint8_t msg[3] = {
         static_cast<uint8_t>(0x90u | ((ch - 1u) & 0x0Fu)),
@@ -40,7 +40,7 @@ void UsbMidiSender::send_note_on(uint8_t ch, uint8_t note, uint8_t vel) {
 }
 
 void UsbMidiSender::send_note_off(uint8_t ch, uint8_t note) {
-    if (!tud_mounted()) return;
+    if (!is_connected()) return;
 
     uint8_t msg[3] = {
         static_cast<uint8_t>(0x80u | ((ch - 1u) & 0x0Fu)),
