@@ -1,27 +1,10 @@
-#include "ssd1306.h"
-#include "driver/i2c.h"
-#include <string.h>
+#include "display.h"
+#include "config.h"
+#include "esp_log.h"
+#include <cstdio>
+#include <cstring>
 
-// SSD1306 command bytes
-namespace Cmd {
-    constexpr uint8_t DISPLAY_OFF     = 0xAE;
-    constexpr uint8_t DISPLAY_ON      = 0xAF;
-    constexpr uint8_t SET_CLOCK_DIV   = 0xD5;
-    constexpr uint8_t SET_MUX_RATIO   = 0xA8;
-    constexpr uint8_t SET_DISP_OFFSET = 0xD3;
-    constexpr uint8_t SET_START_LINE  = 0x40;
-    constexpr uint8_t CHARGE_PUMP     = 0x8D;
-    constexpr uint8_t MEM_ADDR_MODE   = 0x20;
-    constexpr uint8_t SEG_REMAP       = 0xA1;
-    constexpr uint8_t COM_SCAN_DEC    = 0xC8;
-    constexpr uint8_t SET_COM_PINS    = 0xDA;
-    constexpr uint8_t SET_CONTRAST    = 0x81;
-    constexpr uint8_t SET_PRECHARGE   = 0xD9;
-    constexpr uint8_t SET_VCOM       = 0xDB;
-    constexpr uint8_t DISPLAY_RAM     = 0xA4;
-    constexpr uint8_t NORMAL_DISPLAY  = 0xA6;
-    constexpr uint8_t SET_PAGE        = 0xB0;
-}
+static const char* TAG = "Display";
 
 // IBM CP437 8x8 font, row-major (bit7=leftmost pixel), ASCII 0x20-0x7E
 static const uint8_t k_font8x8[][8] = {
@@ -124,85 +107,147 @@ static const uint8_t k_font8x8[][8] = {
 
 // ---------------------------------------------------------------------------
 
-SSD1306::SSD1306(const SSD1306Config &cfg) : cfg_(cfg)
+SSD1306Display::SSD1306Display()
 {
-    i2c_config_t conf = {};
-    conf.mode             = I2C_MODE_MASTER;
-    conf.sda_io_num       = cfg_.sda_pin;
-    conf.scl_io_num       = cfg_.scl_pin;
-    conf.sda_pullup_en    = GPIO_PULLUP_ENABLE;
-    conf.scl_pullup_en    = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = cfg_.freq_hz;
-    i2c_param_config(static_cast<i2c_port_t>(cfg_.i2c_port), &conf);
-    i2c_driver_install(static_cast<i2c_port_t>(cfg_.i2c_port), I2C_MODE_MASTER, 0, 0, 0);
+    mutex_ = xSemaphoreCreateMutex();
 
-    send_cmd(Cmd::DISPLAY_OFF);
-    send_cmd(Cmd::SET_CLOCK_DIV);   send_cmd(0x80);
-    send_cmd(Cmd::SET_MUX_RATIO);   send_cmd(0x3F); // 64 rows
-    send_cmd(Cmd::SET_DISP_OFFSET); send_cmd(0x00);
-    send_cmd(Cmd::SET_START_LINE);
-    send_cmd(Cmd::CHARGE_PUMP);     send_cmd(0x14); // enable
-    send_cmd(Cmd::MEM_ADDR_MODE);   send_cmd(0x00); // horizontal
-    send_cmd(Cmd::SEG_REMAP);
-    send_cmd(Cmd::COM_SCAN_DEC);
-    send_cmd(Cmd::SET_COM_PINS);    send_cmd(0x12);
-    send_cmd(Cmd::SET_CONTRAST);    send_cmd(0xCF);
-    send_cmd(Cmd::SET_PRECHARGE);   send_cmd(0xF1);
-    send_cmd(Cmd::SET_VCOM);        send_cmd(0x40);
-    send_cmd(Cmd::DISPLAY_RAM);
-    send_cmd(Cmd::NORMAL_DISPLAY);
-    send_cmd(Cmd::DISPLAY_ON);
+    for (int i = 0; i < LINES; i++) {
+        memset(log_[i], ' ', COLS);
+        log_[i][COLS] = '\0';
+    }
 
-    clear_screen();
-}
+    i2c_master_bus_config_t bus_cfg = {};
+    bus_cfg.i2c_port             = I2C_NUM_0;
+    bus_cfg.sda_io_num           = PIN_OLED_SDA;
+    bus_cfg.scl_io_num           = PIN_OLED_SCL;
+    bus_cfg.clk_source           = I2C_CLK_SRC_DEFAULT;
+    bus_cfg.glitch_ignore_cnt    = 7;
+    bus_cfg.flags.enable_internal_pullup = true;
+    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_cfg, &bus_));
 
-void SSD1306::send_cmd(uint8_t cmd)
-{
-    uint8_t buf[2] = {0x00, cmd};
-    i2c_master_write_to_device(
-        static_cast<i2c_port_t>(cfg_.i2c_port),
-        cfg_.i2c_addr, buf, sizeof(buf), pdMS_TO_TICKS(50));
-}
+    i2c_device_config_t dev_cfg = {};
+    dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
+    dev_cfg.device_address  = 0x3C;
+    dev_cfg.scl_speed_hz    = 400000;
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_, &dev_cfg, &dev_));
 
-void SSD1306::send_data(const uint8_t *data, size_t len)
-{
-    // prepend 0x40 (data mode) to the payload; max payload is 128 bytes (full page)
-    uint8_t buf[129];
-    buf[0] = 0x40;
-    memcpy(buf + 1, data, len);
-    i2c_master_write_to_device(
-        static_cast<i2c_port_t>(cfg_.i2c_port),
-        cfg_.i2c_addr, buf, len + 1, pdMS_TO_TICKS(100));
-}
+    // SSD1306 init sequence
+    send_cmd(0xAE);
+    send_cmd(0xD5); send_cmd(0x80);
+    send_cmd(0xA8); send_cmd(0x3F);
+    send_cmd(0xD3); send_cmd(0x00);
+    send_cmd(0x40);
+    send_cmd(0x8D); send_cmd(0x14);
+    send_cmd(0x20); send_cmd(0x00);
+    send_cmd(0xA1);
+    send_cmd(0xC8);
+    send_cmd(0xDA); send_cmd(0x12);
+    send_cmd(0x81); send_cmd(0xCF);
+    send_cmd(0xD9); send_cmd(0xF1);
+    send_cmd(0xDB); send_cmd(0x40);
+    send_cmd(0xA4);
+    send_cmd(0xA6);
+    send_cmd(0xAF);
 
-void SSD1306::set_cursor(uint8_t col, uint8_t page)
-{
-    send_cmd(Cmd::SET_PAGE | (page & 0x07));
-    send_cmd(0x00 | (col & 0x0F));        // lower nibble of column
-    send_cmd(0x10 | (col >> 4));           // upper nibble of column
-}
-
-void SSD1306::clear_screen()
-{
     uint8_t blank[128] = {};
     for (uint8_t page = 0; page < 8; page++) {
         set_cursor(0, page);
         send_data(blank, sizeof(blank));
     }
+
+    ESP_LOGI(TAG, "SSD1306 initialized");
 }
 
-void SSD1306::draw_text(uint8_t col, uint8_t page, const char *str)
+SSD1306Display::~SSD1306Display()
 {
-    set_cursor(col, page);
-    while (*str) {
-        uint8_t ch = static_cast<uint8_t>(*str++);
+    if (dev_)   i2c_master_bus_rm_device(dev_);
+    if (bus_)   i2c_del_master_bus(bus_);
+    if (mutex_) vSemaphoreDelete(mutex_);
+}
+
+void SSD1306Display::send_cmd(uint8_t cmd)
+{
+    uint8_t buf[2] = {0x00, cmd};
+    i2c_master_transmit(dev_, buf, sizeof(buf), 50);
+}
+
+void SSD1306Display::send_data(const uint8_t* data, size_t len)
+{
+    uint8_t buf[129];
+    buf[0] = 0x40;
+    memcpy(buf + 1, data, len);
+    i2c_master_transmit(dev_, buf, len + 1, 100);
+}
+
+void SSD1306Display::set_cursor(uint8_t col, uint8_t page)
+{
+    send_cmd(0xB0 | (page & 0x07));
+    send_cmd(0x00 | (col & 0x0F));
+    send_cmd(0x10 | (col >> 4));
+}
+
+void SSD1306Display::draw_line(uint8_t page, const char* str)
+{
+    set_cursor(0, page);
+    uint8_t pixels[128] = {};
+    for (int i = 0; i < COLS; i++) {
+        uint8_t ch = static_cast<uint8_t>(str[i]);
         if (ch < 0x20 || ch > 0x7E) ch = 0x20;
-        const uint8_t *glyph = k_font8x8[ch - 0x20];
-        uint8_t cols[8] = {};
-        for (int row = 0; row < 8; row++)
-            for (int c = 0; c < 8; c++)
+        const uint8_t* glyph = k_font8x8[ch - 0x20];
+        for (int c = 0; c < 8; c++) {
+            uint8_t col_byte = 0;
+            for (int row = 0; row < 8; row++)
                 if (glyph[row] & (0x80 >> c))
-                    cols[c] |= (1 << row);
-        send_data(cols, 8);
+                    col_byte |= (1 << row);
+            pixels[i * 8 + c] = col_byte;
+        }
     }
+    send_data(pixels, sizeof(pixels));
+}
+
+void SSD1306Display::format_event(const MidiEvent& ev, bool outgoing, char* out)
+{
+    const char* dir = outgoing ? "->" : "<-";
+    switch (ev.type) {
+        case MidiEvent::Type::CC:
+            snprintf(out, COLS + 1, "CC%3d %3d     %s", ev.number, ev.value, dir);
+            break;
+        case MidiEvent::Type::NOTE_ON:
+            snprintf(out, COLS + 1, "N %3d ON      %s", ev.number, dir);
+            break;
+        case MidiEvent::Type::NOTE_OFF:
+            snprintf(out, COLS + 1, "N %3d OFF     %s", ev.number, dir);
+            break;
+    }
+}
+
+void SSD1306Display::push_event(const MidiEvent& ev, bool outgoing)
+{
+    char line[COLS + 1];
+    format_event(ev, outgoing, line);
+
+    xSemaphoreTake(mutex_, portMAX_DELAY);
+    memcpy(log_[head_], line, COLS + 1);
+    head_  = (head_ + 1) % LINES;
+    dirty_ = true;
+    xSemaphoreGive(mutex_);
+}
+
+void SSD1306Display::render()
+{
+    xSemaphoreTake(mutex_, portMAX_DELAY);
+    if (!dirty_) {
+        xSemaphoreGive(mutex_);
+        return;
+    }
+    char snapshot[LINES][COLS + 1];
+    for (int i = 0; i < LINES; i++) {
+        int idx = (head_ + i) % LINES;
+        memcpy(snapshot[i], log_[idx], COLS + 1);
+    }
+    dirty_ = false;
+    xSemaphoreGive(mutex_);
+
+    for (int i = 0; i < LINES; i++)
+        draw_line(i, snapshot[i]);
 }
