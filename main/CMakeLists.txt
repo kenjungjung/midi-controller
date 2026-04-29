@@ -5,6 +5,7 @@ set(SOURCES
     src/usb_midi.cpp
     src/controller.cpp
     src/display.cpp
+    src/led.cpp
 )
 
 idf_component_register(

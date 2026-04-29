@@ -6,9 +6,10 @@
 #include "config.h"
 #include "analog_input.h"
 #include "button.h"
+#include "led.h"
 #include "usb_midi.h"
+#include "display.h"
 #include "controller.h"
-// #include "display.h"
 
 static QueueHandle_t  midi_queue;
 static Controller*    g_controller;
@@ -35,7 +36,6 @@ static void midi_task(void* /*arg*/) {
     g_controller->midi_loop();
 }
 
-
 static void display_task(void* arg) {
     IDisplay* display = static_cast<IDisplay*>(arg);
     while (true) {
@@ -43,7 +43,6 @@ static void display_task(void* arg) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-
 
 extern "C" void app_main(void) {
     tinyusb_config_t tusb_cfg = {};
@@ -56,19 +55,42 @@ extern "C" void app_main(void) {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
 #ifndef USE_STUBS
-    static AdcAnalogInput  fader(ADC_UNIT_FADER, ADC_CH_FADER_1, ADC_ATTEN);
-    static GpioButton      button(PIN_BUTTON_1);
-    static UsbMidiSender   sender;
-    static Display  display;
+    static AdcAnalogInput   fader(ADC_UNIT_FADER, ADC_CH_FADER_1, ADC_ATTEN);
+    static StubAnalogInput  knob1, knob2, knob3;  // Phase3 で実ハードウェアに差し替え
+    static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
+    static LedManager       led;
+    static UsbMidiSender    sender;
+    static Display          display;
 #else
-    static StubAnalogInput fader;
-    static StubButton      button;
-    static UsbMidiSender   sender;
-    static StubDisplay     display;
+    static StubAnalogInput  fader;
+    static StubAnalogInput  knob1, knob2, knob3;
+    static StubButtonLed    btn;
+    static StubLed          led;
+    static UsbMidiSender    sender;
+    static StubDisplay      display;
 #endif
 
-    midi_queue   = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
-    static Controller controller(fader, button, sender, display, midi_queue);
+    // LED テスト: 赤→緑→青→消灯 を各500ms
+#ifndef USE_STUBS
+    for (RgbColor c : {RgbColor{64,0,0}, {0,64,0}, {0,0,64}, {0,0,0}}) {
+        led.set_color(0, c);
+        led.refresh();
+        vTaskDelay(pdMS_TO_TICKS(500));
+    }
+#endif
+
+    midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
+
+    static ControllerConfig cfg = {
+        .faders   = { &fader },
+        .knobs    = { &knob1, &knob2, &knob3 },
+        .buttons  = { &btn },
+        .led      = &led,
+        .display  = &display,
+        .sender   = &sender,
+        .midi_queue = midi_queue,
+    };
+    static Controller controller(cfg);
     g_controller = &controller;
 
     xTaskCreatePinnedToCore(input_task,   "input",   STACK_INPUT,   nullptr,  PRIO_INPUT,   nullptr, CORE_INPUT);

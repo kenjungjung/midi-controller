@@ -19,7 +19,7 @@
 | ADCスライダー | analog_input.cpp/.h | 完了 |
 | ボタン | button.cpp/.h | 完了 |
 | コントローラー本体 | controller.cpp/.h | 完了 |
-| LED制御 | led.cpp/.h | 未着手 |
+| LED制御 | led.cpp/.h | 完了（PL9823-F5 / WS2812B互換、RMT） |
 | ディスプレイ | display_manager.cpp/.h | 未着手 |
 | Ableton Remote Script | remote-script/ | 未着手 |
 
