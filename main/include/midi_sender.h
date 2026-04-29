@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <cstddef>
 
 /** @brief MIDI 送信の抽象インターフェース */
 class IMidiSender {
@@ -28,4 +29,12 @@ public:
 
     /** @brief USB MIDI として PC に接続済みなら true */
     virtual bool is_connected() const = 0;
+
+    /** @brief 完全な SysEx メッセージを1件読み出す（F0〜F7）
+     *  @param buf      受信バッファ
+     *  @param out_len  受信バイト数（F0・F7含む）
+     *  @param max_len  buf のサイズ
+     *  @return 完全な SysEx を受信したら true
+     */
+    virtual bool read_sysex(uint8_t* buf, size_t* out_len, size_t max_len) = 0;
 };

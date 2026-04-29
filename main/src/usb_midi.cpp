@@ -2,6 +2,7 @@
 #include "tusb.h"
 #include "class/midi/midi_device.h"
 #include "esp_log.h"
+#include <cstring>
 
 static const char* TAG = "UsbMidi";
 
@@ -50,4 +51,29 @@ void UsbMidiSender::send_note_off(uint8_t ch, uint8_t note) {
     if (written == 0) {
         ESP_LOGW(TAG, "send_note_off: write failed");
     }
+}
+
+bool UsbMidiSender::read_sysex(uint8_t* buf, size_t* out_len, size_t max_len) {
+    uint8_t byte;
+    while (tud_midi_stream_read(&byte, 1) == 1) {
+        if (byte == 0xF0u) {
+            in_sysex_ = true;
+            sysex_len_ = 0;
+        }
+        if (!in_sysex_) continue;
+
+        if (sysex_len_ < SYSEX_BUF_SIZE) {
+            sysex_buf_[sysex_len_++] = byte;
+        }
+        if (byte == 0xF7u) {
+            in_sysex_ = false;
+            if (sysex_len_ <= max_len) {
+                memcpy(buf, sysex_buf_, sysex_len_);
+                *out_len = sysex_len_;
+                return true;
+            }
+            ESP_LOGW(TAG, "read_sysex: buffer too small (%u bytes)", (unsigned)sysex_len_);
+        }
+    }
+    return false;
 }

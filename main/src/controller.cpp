@@ -36,7 +36,7 @@ void Controller::input_loop() {
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_fader_cc_[i]));
                 if (delta >= DEADBAND) {
-                    ESP_LOGI(TAG, "fader[%d] CC=%3d", i, new_cc);
+                    ESP_LOGI(TAG, "fader[%d] CC=%3d vol=%4d", i, new_cc, cfg_.faders[i]->read());
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_FADER_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);

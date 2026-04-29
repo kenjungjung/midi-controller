@@ -209,16 +209,16 @@ void Display::draw_line(uint8_t page, const char* str)
 std::array<char, Display::COLS + 1> Display::format_event(const MidiEvent& ev, bool outgoing)
 {
     std::array<char, Display::COLS + 1> out{};
-    const char* dir = outgoing ? "->" : "<-";
+    const char* dir = outgoing ? "OUT" : "IN ";
     switch (ev.type) {
         case MidiEvent::Type::CC:
-            snprintf(out.data(), out.size(), "CC%3d %3d %s", ev.number, ev.value, dir);
+            snprintf(out.data(), out.size(), "%s CC%3d %3d", dir, ev.number, ev.value);
             break;
         case MidiEvent::Type::NOTE_ON:
-            snprintf(out.data(), out.size(), "N %3d ON %s", ev.number, dir);
+            snprintf(out.data(), out.size(), "%s N %3d ON", dir, ev.number);
             break;
         case MidiEvent::Type::NOTE_OFF:
-            snprintf(out.data(), out.size(), "N %3d OFF %s", ev.number, dir);
+            snprintf(out.data(), out.size(), "%s N %3d OFF",dir, ev.number);
             break;
     }
     return out;
