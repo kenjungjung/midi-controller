@@ -82,7 +82,7 @@ extern "C" void app_main(void) {
 
     static ControllerConfig cfg = {
         .faders   = { &fader },
-        .knobs    = {}, //{ &knob1 },// { &knob1, &knob2, &knob3 },
+        .knobs    = { &knob1 },// { &knob1, &knob2, &knob3 },
         .buttons  = { &btn },
         .led      = &led,
         .display  = &display,

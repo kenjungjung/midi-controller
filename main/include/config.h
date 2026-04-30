@@ -12,7 +12,7 @@ constexpr gpio_num_t PIN_OLED_SDA = GPIO_NUM_8;
 constexpr gpio_num_t PIN_OLED_SCL = GPIO_NUM_9;
 
 // ─── LED ──────────────────────────────────────────────────
-constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_5; ///< PL9823-F5 data line (RMT) ※GPIO4損傷疑いで変更
+constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_5; ///< PL9823-F5 data line (RMT)
 constexpr int        NUM_LEDS     = 1;
 
 // ─── 74HC4052AP マルチプレクサ ────────────────────────────
@@ -20,7 +20,7 @@ constexpr int        NUM_LEDS     = 1;
 constexpr gpio_num_t    PIN_MUX_A    = GPIO_NUM_1;      ///< セレクト A          （ADC1_CH0）
 constexpr gpio_num_t    PIN_MUX_B    = GPIO_NUM_2;      ///< セレクト B          （ADC1_CH1）
 //   Xコモン（ADC入力） ※PIN_MUX_A/Bと重複しないGPIOを選ぶこと
-constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_4;  ///< Xコモン（GPIO5）
+constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7）
 constexpr adc_unit_t    ADC_UNIT_MUX  = ADC_UNIT_1;
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US = 10;              ///< チャンネル切替後の整定待ち [µs]
@@ -32,9 +32,9 @@ constexpr uint8_t CC_KNOB_1     = 20;  ///< ノブ CC: 20〜(20+NUM_KNOBS-1)
 constexpr uint8_t NOTE_BUTTON_1 = 36;  ///< ボタン Note: 36〜(36+NUM_BUTTONS-1)
 constexpr int     DEADBAND      = 1;   ///< minimum CC change threshold
 constexpr int     FADER_RAW_MIN = 200; ///< fader bottom (measured)
-constexpr int     FADER_RAW_MAX = 1200;///< fader top (measured)
+constexpr int     FADER_RAW_MAX = 3972;///< fader top (measured)
 constexpr int     KNOB_RAW_MIN = 0;    ///< knob bottom (measured)
-constexpr int     KNOB_RAW_MAX = 1200; ///< knob top (measured)
+constexpr int     KNOB_RAW_MAX = 3972; ///< knob top (measured)
 
 // ─── タスク設定 ───────────────────────────────────────────
 constexpr int MIDI_QUEUE_LEN = 32;
@@ -51,7 +51,7 @@ constexpr int CORE_INPUT     = 0;  ///< InputTask + DisplayTask
 
 // ─── チャンネル数 ─────────────────────────────────────────
 constexpr int NUM_FADERS  = 1; ///< フェーダー本数（Phase4 で 12）
-constexpr int NUM_KNOBS   = 0; ///< ノブ本数
+constexpr int NUM_KNOBS   = 1; ///< ノブ本数
 constexpr int NUM_BUTTONS = 1; ///< ボタン本数（Phase3 で 10）
 
 // #define USE_STUBS  // uncomment to replace hardware with stubs
