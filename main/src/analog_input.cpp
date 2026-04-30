@@ -47,7 +47,7 @@ AdcAnalogInput::~AdcAnalogInput() {
     }
 }
 
-uint16_t AdcAnalogInput::read_midi_cc() const {
+uint16_t AdcAnalogInput::read_midi_cc() {
     int raw = 0;
     ESP_ERROR_CHECK(adc_oneshot_read(adc_handle_, channel_, &raw));
 

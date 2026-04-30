@@ -33,9 +33,10 @@ constexpr uint8_t NOTE_BUTTON_1 = 36;  ///< ボタン Note: 36〜(36+NUM_BUTTONS
 constexpr int     DEADBAND      = 1;   ///< minimum CC change threshold
 constexpr int     FADER_RAW_MIN = 200; ///< fader bottom (measured)
 constexpr int     FADER_RAW_MAX = 3972;///< fader top (measured)
-constexpr int     KNOB_RAW_MIN = 0;    ///< knob bottom (measured)
-constexpr int     KNOB_RAW_MAX = 3972; ///< knob top (measured)
-
+constexpr int     KNOB_RAW_MIN  = 0;    ///< knob bottom (measured)
+constexpr int     KNOB_RAW_MAX  = 3972; ///< knob top (measured)
+constexpr int     MIDI_BTN_THRETHOLD = 63; ///< button on/off threthold
+ 
 // ─── タスク設定 ───────────────────────────────────────────
 constexpr int MIDI_QUEUE_LEN = 32;
 constexpr int STACK_USB      = 4096;

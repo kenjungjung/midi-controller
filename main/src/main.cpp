@@ -65,7 +65,8 @@ extern "C" void app_main(void) {
                                 PIN_MUX_A, PIN_MUX_B);
     static MuxChannel       fader(mux, 0, FADER_RAW_MIN, FADER_RAW_MAX);
     static MuxChannel       knob1(mux, 1, KNOB_RAW_MIN, KNOB_RAW_MAX);
-    static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
+    static MuxChannel       btn(mux, 2, KNOB_RAW_MIN, KNOB_RAW_MAX);
+    // static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
     static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;

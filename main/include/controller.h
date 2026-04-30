@@ -20,7 +20,7 @@ struct ControllerConfig {
     // 入力
     std::array<IAnalogInput*, NUM_FADERS>  faders;   ///< フェーダー群
     std::array<IAnalogInput*, NUM_KNOBS>   knobs;    ///< ノブ群
-    std::array<IButtonLed*,   NUM_BUTTONS> buttons;  ///< ボタン群（LED付き含む）
+    std::array<IAnalogInput*, NUM_BUTTONS> buttons;  ///< ボタン群（LED付き含む）
     // 出力
     ILed*          led;         ///< RGBステータスLED（PL9823等）
     IDisplay*      display;     ///< OLEDディスプレイ

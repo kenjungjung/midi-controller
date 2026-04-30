@@ -64,14 +64,15 @@ void Controller::input_loop() {
 
             // ボタン
             for (int i = 0; i < NUM_BUTTONS; ++i) {
-                bool pressed = cfg_.buttons[i]->is_pressed();
+                uint8_t new_cc = cfg_.buttons[i]->read_midi_cc();
+                bool pressed = (new_cc >= MIDI_BTN_THRETHOLD);
                 if (pressed && !prev_btn_[i]) {
-                    cfg_.buttons[i]->set_led(true);
+                    // cfg_.buttons[i]->set_led(true);
                     MidiEvent ev{MidiEvent::Type::NOTE_ON, MIDI_CHANNEL,
                                  static_cast<uint8_t>(NOTE_BUTTON_1 + i), 127};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
                 } else if (!pressed && prev_btn_[i]) {
-                    cfg_.buttons[i]->set_led(false);
+                    // cfg_.buttons[i]->set_led(false);
                     MidiEvent ev{MidiEvent::Type::NOTE_OFF, MIDI_CHANNEL,
                                  static_cast<uint8_t>(NOTE_BUTTON_1 + i), 0};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
