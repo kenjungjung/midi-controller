@@ -12,7 +12,7 @@ public:
      *  @return mV値をADC12bitレンジ（0–4095）に再スケールした値
      *          （0mV → 0, 3300mV → 4095）
      */
-    virtual uint16_t read() const = 0;
+    virtual uint16_t read_midi_cc() const = 0;
 };
 
 /** @brief ESP32-S3 ADC1 を使ったアナログ入力実装 */
@@ -23,28 +23,17 @@ public:
      *  @param channel ADCチャンネル
      *  @param atten   入力レンジ（デフォルト: ADC_ATTEN_DB_12 = 0–3.3V）
      */
-    AdcAnalogInput(adc_unit_t unit, adc_channel_t channel,
+    AdcAnalogInput(adc_unit_t unit, adc_channel_t channel, int vol_min, int vol_max,
                    adc_atten_t atten = ADC_ATTEN_DB_12);
     ~AdcAnalogInput() override;
 
-    uint16_t read() const override;
+    uint16_t read_midi_cc() const override;
 
 private:
     adc_oneshot_unit_handle_t adc_handle_;
     adc_cali_handle_t         cali_handle_;
     adc_channel_t             channel_;
+    int                       vol_min_;
+    int                       vol_max_;
     bool                      cali_valid_;
-};
-
-/** @brief テスト用スタブ: 固定値を返す */
-class StubAnalogInput : public IAnalogInput {
-public:
-    /** @param fixed_value read() が常に返す値（デフォルト: 2048） */
-    explicit StubAnalogInput(uint16_t fixed_value = 2048)
-        : value_(fixed_value) {}
-
-    uint16_t read() const override { return value_; }
-
-private:
-    uint16_t value_;
 };

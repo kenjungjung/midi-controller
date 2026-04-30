@@ -4,10 +4,10 @@
 
 static const char* TAG = "AdcAnalogInput";
 
-AdcAnalogInput::AdcAnalogInput(adc_unit_t unit, adc_channel_t channel,
+AdcAnalogInput::AdcAnalogInput(adc_unit_t unit, adc_channel_t channel, int vol_min, int vol_max,
                                adc_atten_t atten)
     : adc_handle_(nullptr), cali_handle_(nullptr),
-      channel_(channel), cali_valid_(false)
+      channel_(channel), vol_min_(vol_min), vol_max_(vol_max), cali_valid_(false)
 {
     // ADC ユニット初期化
     adc_oneshot_unit_init_cfg_t unit_cfg = {
@@ -47,7 +47,7 @@ AdcAnalogInput::~AdcAnalogInput() {
     }
 }
 
-uint16_t AdcAnalogInput::read() const {
+uint16_t AdcAnalogInput::read_midi_cc() const {
     int raw = 0;
     ESP_ERROR_CHECK(adc_oneshot_read(adc_handle_, channel_, &raw));
 
@@ -55,7 +55,12 @@ uint16_t AdcAnalogInput::read() const {
         int voltage_mv = 0;
         ESP_ERROR_CHECK(adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv));
         // mV（0–3300）を 0–4095 にスケール
-        return static_cast<uint16_t>(voltage_mv * 4095 / 3300);
+        raw =  static_cast<uint16_t>(voltage_mv * 4095 / 3300);
     }
-    return static_cast<uint16_t>(raw);
+    
+    int clamped = raw < vol_min_ ? vol_min_
+                : raw > vol_max_ ? vol_max_ : raw;
+                
+    ESP_LOGI("AdcAnalogInput", "vol=%4d", raw);
+    return static_cast<uint8_t>((clamped - vol_min_) * 127 / (vol_max_ - vol_min_));
 }

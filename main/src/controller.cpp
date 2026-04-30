@@ -24,12 +24,6 @@ void Controller::notify_connected(bool connected) {
     cfg_.display->set_title(connected ? Display::TITLE : Display::DISCONECTED);
 }
 
-uint8_t Controller::to_midi_cc(uint16_t raw) {
-    int clamped = raw < FADER_RAW_MIN ? FADER_RAW_MIN
-                : raw > FADER_RAW_MAX ? FADER_RAW_MAX : raw;
-    return static_cast<uint8_t>((clamped - FADER_RAW_MIN) * 127 / (FADER_RAW_MAX - FADER_RAW_MIN));
-}
-
 void Controller::input_loop() {
     bool prev_connected = false;
     while (true) {
@@ -42,12 +36,11 @@ void Controller::input_loop() {
         if (connected) {
             // フェーダー
             for (int i = 0; i < NUM_FADERS; ++i) {
-                uint8_t new_cc = to_midi_cc(cfg_.faders[i]->read());
+                uint8_t new_cc = cfg_.faders[i]->read_midi_cc();
                 int delta = (prev_fader_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_fader_cc_[i]));
                 if (delta >= DEADBAND) {
-                    ESP_LOGI(TAG, "fader[%d] CC=%3d vol=%4d", i, new_cc, cfg_.faders[i]->read());
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_FADER_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
@@ -57,12 +50,11 @@ void Controller::input_loop() {
 
             // ノブ
             for (int i = 0; i < NUM_KNOBS; ++i) {
-                uint8_t new_cc = to_midi_cc(cfg_.knobs[i]->read());
+                uint8_t new_cc = cfg_.knobs[i]->read_midi_cc();
                 int delta = (prev_knob_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_knob_cc_[i]));
                 if (delta >= DEADBAND) {
-                    ESP_LOGI(TAG, "knob[%d] CC=%3d", i, new_cc);
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_KNOB_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);

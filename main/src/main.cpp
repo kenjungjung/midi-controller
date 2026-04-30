@@ -5,6 +5,8 @@
 #include "usb_descriptors.h"
 #include "config.h"
 #include "analog_input.h"
+#include "mux_controller.h"
+#include "mux_channel.h"
 #include "button.h"
 #include "led.h"
 #include "usb_midi.h"
@@ -59,8 +61,10 @@ extern "C" void app_main(void) {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
 #ifndef USE_STUBS
-    static AdcAnalogInput   fader(ADC_UNIT_FADER, ADC_CH_FADER_1, ADC_ATTEN);
-    static StubAnalogInput  knob1, knob2, knob3;  // Phase3 で実ハードウェアに差し替え
+    static MuxController    mux(ADC_UNIT_MUX, ADC_CH_MUX_X, ADC_ATTEN,
+                                PIN_MUX_A, PIN_MUX_B);
+    static MuxChannel       fader(mux, 0, FADER_RAW_MIN, FADER_RAW_MAX);
+    static MuxChannel       knob1(mux, 1, KNOB_RAW_MIN, KNOB_RAW_MAX);
     static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
     static LedManager       led;
     static UsbMidiSender    sender;
@@ -78,7 +82,7 @@ extern "C" void app_main(void) {
 
     static ControllerConfig cfg = {
         .faders   = { &fader },
-        .knobs    = { &knob1, &knob2, &knob3 },
+        .knobs    = {}, //{ &knob1 },// { &knob1, &knob2, &knob3 },
         .buttons  = { &btn },
         .led      = &led,
         .display  = &display,
