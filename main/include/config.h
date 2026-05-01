@@ -8,7 +8,8 @@ constexpr gpio_num_t PIN_OLED_SCL = GPIO_NUM_9;
 
 // ─── LED ──────────────────────────────────────────────────
 constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_4;
-constexpr int        NUM_LEDS     = 1;
+constexpr int        NUM_LEDS     = 5;
+constexpr uint8_t    LED_DARKNESS = 10;
 
 // ─── 74HC4052AP マルチプレクサ ────────────────────────────
 //   セレクト・禁止ピン（GPIO出力）
@@ -18,6 +19,10 @@ constexpr gpio_num_t    PIN_MUX_B    = GPIO_NUM_2;      ///< セレクト B     
 constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7）
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US = 10;              ///< チャンネル切替後の整定待ち [µs]
+
+constexpr int NUM_FADERS  = 1; ///< フェーダー本数（Phase4 で 12）
+constexpr int NUM_KNOBS   = 1; ///< ノブ本数
+constexpr int NUM_BUTTONS = 1; ///< ボタン本数（Phase3 で 10）
 
 // adcテスト用
 constexpr adc_channel_t ADC_CH_TEST  = ADC_CHANNEL_5;  ///< GPIO6 = ADC1_CH5
@@ -48,10 +53,5 @@ constexpr int PRIO_MIDI      = 4;
 constexpr int PRIO_DISPLAY   = 3;
 constexpr int CORE_USB       = 1;  ///< UsbTask + MidiTask
 constexpr int CORE_INPUT     = 0;  ///< InputTask + DisplayTask
-
-// ─── チャンネル数 ─────────────────────────────────────────
-constexpr int NUM_FADERS  = 1; ///< フェーダー本数（Phase4 で 12）
-constexpr int NUM_KNOBS   = 1; ///< ノブ本数
-constexpr int NUM_BUTTONS = 1; ///< ボタン本数（Phase3 で 10）
 
 // #define USE_STUBS  // uncomment to replace hardware with stubs

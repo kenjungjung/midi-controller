@@ -130,15 +130,16 @@ static void handle_sysex(const uint8_t* buf, size_t len, ILed* led) {
     // 最小長: F0 7D type index data... F7 = 最低7バイト（カラーは8バイト）
     if (len < 7 || buf[0] != 0xF0u || buf[1] != 0x7Du || buf[len - 1] != 0xF7u) return;
 
+    ESP_LOGI("SysEx", "track %X", buf);
     uint8_t type  = buf[2];
     uint8_t index = buf[3];
 
     if (type == 0x01u && len == 8u) {
         // トラックカラー: F0 7D 01 <index> <R> <G> <B> F7
         if (index >= NUM_LEDS) return;
-        uint8_t r = static_cast<uint8_t>(buf[4] * 2u);
-        uint8_t g = static_cast<uint8_t>(buf[5] * 2u);
-        uint8_t b = static_cast<uint8_t>(buf[6] * 2u);
+        uint8_t r = static_cast<uint8_t>(buf[4] * 2u / LED_DARKNESS);
+        uint8_t g = static_cast<uint8_t>(buf[5] * 2u / LED_DARKNESS);
+        uint8_t b = static_cast<uint8_t>(buf[6] * 2u / LED_DARKNESS);
         ESP_LOGI("SysEx", "track[%d] color R=%d G=%d B=%d", index, r, g, b);
         led->set_color(index, {r, g, b});
         led->refresh();

@@ -66,7 +66,7 @@ extern "C" void app_main(void) {
     static MuxChannel       fader(mux, 0);
     static MuxChannel       knob1(mux, 1);
     static MuxChannel       btn(mux, 2);
-    // static LedManager       led;
+    static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;
 #else
@@ -84,7 +84,7 @@ extern "C" void app_main(void) {
         .faders   = { &fader },
         .knobs    = { &knob1 },// { &knob1, &knob2, &knob3 },
         .buttons  = { &btn },
-        .led      = {},// &led,
+        .led      = &led,
         .display  = &display,
         .sender   = &sender,
         .midi_queue = midi_queue,
