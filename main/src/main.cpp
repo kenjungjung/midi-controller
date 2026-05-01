@@ -92,6 +92,8 @@ extern "C" void app_main(void) {
     static Controller controller(cfg);
     g_controller = &controller;
 
+    
+
     xTaskCreatePinnedToCore(input_task,   "input",   STACK_INPUT,   nullptr,  PRIO_INPUT,   nullptr, CORE_INPUT);
     xTaskCreatePinnedToCore(midi_task,    "midi",    STACK_MIDI,    nullptr,  PRIO_MIDI,    nullptr, CORE_USB);
     xTaskCreatePinnedToCore(display_task, "display", STACK_DISPLAY, &display, PRIO_DISPLAY, nullptr, CORE_INPUT);

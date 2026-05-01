@@ -52,6 +52,8 @@ void Controller::reset_prev_cc() {
 
 void Controller::notify_connected(bool connected) {
     cfg_.display->set_title(connected ? Display::TITLE : Display::DISCONECTED);
+
+
 }
 
 void Controller::input_loop() {
@@ -62,7 +64,19 @@ void Controller::input_loop() {
         if (connected != prev_connected) {
             notify_connected(connected);
             prev_connected = connected;
+            if(connected) {
+                // abletonにREFRESH要求
+                const uint8_t msg[] = {0xF0, 0x7D, 0x02, 0xF7};
+                cfg_.sender->send_sysex(msg, sizeof(msg));
+                ESP_LOGI("send request", "REFRESH");
+            }
+            else {
+                for (int i = 0; i < NUM_LEDS; ++i) {
+                    cfg_.led->set_color(i, {0, 0, 0});
+                }
+            }
         }
+        // 入力読み込み処理
         if (connected) {
             // フェーダー
             for (int i = 0; i < NUM_FADERS; ++i) {

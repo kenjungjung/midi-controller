@@ -9,7 +9,7 @@ constexpr gpio_num_t PIN_OLED_SCL = GPIO_NUM_9;
 // ─── LED ──────────────────────────────────────────────────
 constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_4;
 constexpr int        NUM_LEDS     = 5;
-constexpr uint8_t    LED_DARKNESS = 10;
+constexpr uint8_t    LED_DARKNESS = 50;
 
 // ─── 74HC4052AP マルチプレクサ ────────────────────────────
 //   セレクト・禁止ピン（GPIO出力）

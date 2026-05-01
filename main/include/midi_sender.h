@@ -37,4 +37,10 @@ public:
      *  @return 完全な SysEx を受信したら true
      */
     virtual bool read_sysex(uint8_t* buf, size_t* out_len, size_t max_len) = 0;
+    /** @brief 完全な SysEx メッセージを送信する（F0〜F7）
+     *  @param data  送信データ（F0開始・F7終端を含む）
+     *  @param len   データ長（バイト数） MIDI の仕様上、データは 7bit（0x00〜0x7F）に収める必要がある
+     *  @return すべてのバイトを送信できたら true、失敗時は false
+     */
+    virtual bool send_sysex(const uint8_t* data, size_t len) = 0;
 };

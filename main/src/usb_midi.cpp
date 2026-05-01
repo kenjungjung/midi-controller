@@ -77,3 +77,26 @@ bool UsbMidiSender::read_sysex(uint8_t* buf, size_t* out_len, size_t max_len) {
     }
     return false;
 }
+
+bool UsbMidiSender::send_sysex(const uint8_t* data, size_t len) {
+    if (!is_connected()) {
+        ESP_LOGW(TAG, "send_sysex: not connected");
+        return false;
+    }
+
+    // フォーマットチェック（最低限）
+    if (len < 2 || data[0] != 0xF0u || data[len - 1] != 0xF7u) {
+        ESP_LOGW(TAG, "send_sysex: invalid format");
+        return false;
+    }
+
+    uint32_t written = tud_midi_stream_write(0, data, len);
+
+    if (written != len) {
+        ESP_LOGW(TAG, "send_sysex: partial write (%u/%u)",
+                 (unsigned)written, (unsigned)len);
+        return false;
+    }
+
+    return true;
+}

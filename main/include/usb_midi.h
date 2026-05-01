@@ -13,6 +13,7 @@ public:
     void send_note_off(uint8_t ch, uint8_t note) override;
     bool is_connected() const override;
     bool read_sysex(uint8_t* buf, size_t* out_len, size_t max_len) override;
+    bool send_sysex(const uint8_t* data, size_t len) override;
 
 private:
     static constexpr size_t SYSEX_BUF_SIZE = 64;
