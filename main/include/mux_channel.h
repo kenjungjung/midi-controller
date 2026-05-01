@@ -1,3 +1,5 @@
+#pragma once
+#include "analog_input.h"
 #include "mux_controller.h"
 
 /** @brief MuxController の1チャンネルを IAnalogInput として公開するラッパー */

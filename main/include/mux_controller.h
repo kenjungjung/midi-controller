@@ -4,37 +4,36 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
-#include "analog_input.h"
+#include "adc_unit.h"
 
 /** @brief 74HC4052AP デュアル4chマルチプレクサのコントローラー
  *
- *  S0/S1 の2ビットで4チャンネルを選択し、ADC1で読み取る。
- *  /E (Active Low Enable) は初期化時にLowに固定する。
- *  ADC1 unitハンドルを唯一所有するため、他の AdcAnalogInput と併用不可。
+ *  A/B の2ビットで4チャンネルを選択し、Adc1Unit 経由でADC読み取りを行う。
+ *  /E はGNDに固定を前提とする。
  */
 class MuxController {
 public:
     /** @brief 初期化
-     *  @param x       X（Xセクションコモン）が接続されたADCチャンネル
-     *  @param atten   入力レンジ
-     *  @param pin_a   セレクト A GPIO
-     *  @param pin_b   セレクト B GPIO
+     *  @param unit  共有 Adc1Unit
+     *  @param x     X（Xセクションコモン）が接続されたADCチャンネル
+     *  @param atten 入力レンジ
+     *  @param pin_a セレクト A GPIO
+     *  @param pin_b セレクト B GPIO
      */
-    MuxController(adc_channel_t x, adc_atten_t atten,
+    MuxController(Adc1Unit& unit, adc_channel_t x, adc_atten_t atten,
                   gpio_num_t pin_a, gpio_num_t pin_b);
     ~MuxController();
 
-    /** @brief 指定チャンネルを選択してADC値（0–4095）を返す */
-    uint16_t read(uint8_t mux_ch);
+    /** @brief 指定チャンネルを選択してキャリブレーション済み値（0–4095）を返す */
+    uint16_t read(uint8_t mux_ch) const;
 
 private:
-    /** @brief S0/S1 GPIO を mux_ch に応じてセット */
-    void select(uint8_t mux_ch);
+    void select(uint8_t mux_ch) const;
 
-    adc_oneshot_unit_handle_t adc_handle_;
-    adc_cali_handle_t         cali_handle_;
-    bool                      cali_valid_;
-    adc_channel_t             x_;
-    gpio_num_t                pin_a_;
-    gpio_num_t                pin_b_;
+    Adc1Unit&               unit_;
+    adc_cali_handle_t       cali_handle_;
+    bool                    cali_valid_;
+    adc_channel_t           x_;
+    const gpio_num_t      pin_a_;
+    const gpio_num_t      pin_b_;
 };

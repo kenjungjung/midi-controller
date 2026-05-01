@@ -5,14 +5,36 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
-static const char* TAG = "Controller";
+// static const char* TAG = "Controller";
 
-static uint8_t to_midi_cc(uint16_t vol, uint16_t vol_min, uint16_t vol_max){
-    
-    int clamped = vol < vol_min ? vol_min
-                : vol > vol_max ? vol_max : vol;
-                
-    return static_cast<uint8_t>((clamped - vol_min) * 127 / (vol_max - vol_min));
+enum AdcType{
+    eFader,
+    eKnob,
+    eButton,
+};
+
+static uint8_t to_midi_cc(AdcType eType, uint16_t vol) {
+    int vol_min = 0;    
+    int vol_max = 4095;
+
+    uint8_t midi_cc = 0;
+
+    switch(eType){
+        case eFader: vol_min = FADER_RAW_MIN; vol_max = FADER_RAW_MAX;[[fallthrough]];
+        case eKnob:  vol_min = KNOB_RAW_MIN;  vol_max = KNOB_RAW_MAX;{
+            int clamped = vol < vol_min ? vol_min
+                        : vol > vol_max ? vol_max : vol;
+            midi_cc = static_cast<uint8_t>((clamped - vol_min) * 127 / (vol_max - vol_min));
+            break;
+        }
+        case eButton:
+            midi_cc = static_cast<uint8_t>(vol >= BTN_RAW_THRETHOLD ? 127 : 0);
+            break;
+        default:
+            assert(0);
+            break;
+    }
+    return midi_cc;
 }
 
 Controller::Controller(const ControllerConfig& cfg)
@@ -45,7 +67,7 @@ void Controller::input_loop() {
             // フェーダー
             for (int i = 0; i < NUM_FADERS; ++i) {
                 auto vol = cfg_.faders[i]->read();
-                auto new_cc = to_midi_cc(vol, FADER_RAW_MIN, FADER_RAW_MAX);
+                auto new_cc = to_midi_cc(eFader, vol);
                 int delta = (prev_fader_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_fader_cc_[i]));
@@ -61,7 +83,7 @@ void Controller::input_loop() {
             // ノブ
             for (int i = 0; i < NUM_KNOBS; ++i) {
                 auto vol = cfg_.knobs[i]->read();
-                auto new_cc = to_midi_cc(vol, KNOB_RAW_MIN, KNOB_RAW_MAX);
+                auto new_cc = to_midi_cc(eKnob, vol);
                 int delta = (prev_knob_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_knob_cc_[i]));
@@ -77,8 +99,8 @@ void Controller::input_loop() {
             // ボタン
             for (int i = 0; i < NUM_BUTTONS; ++i) {
                 auto vol = cfg_.buttons[i]->read();
-                auto new_cc = to_midi_cc(vol, KNOB_RAW_MIN, KNOB_RAW_MAX);
-                bool pressed = (new_cc >= MIDI_BTN_THRETHOLD);
+                auto new_cc = to_midi_cc(eButton, vol);
+                bool pressed = (new_cc >= BTN_MIDI_THRETHOLD);
                 if (pressed && !prev_btn_[i]) {
                     // cfg_.buttons[i]->set_led(true);                    
                     ESP_LOGI("MIDI out", "button %d vol=%4d, ON", i, vol);

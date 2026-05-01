@@ -12,7 +12,7 @@ constexpr gpio_num_t PIN_OLED_SDA = GPIO_NUM_8;
 constexpr gpio_num_t PIN_OLED_SCL = GPIO_NUM_9;
 
 // ─── LED ──────────────────────────────────────────────────
-constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_5; ///< PL9823-F5 data line (RMT)
+constexpr gpio_num_t PIN_LED_DATA = GPIO_NUM_4;
 constexpr int        NUM_LEDS     = 1;
 
 // ─── 74HC4052AP マルチプレクサ ────────────────────────────
@@ -24,6 +24,10 @@ constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7�
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US = 10;              ///< チャンネル切替後の整定待ち [µs]
 
+// adcテスト用
+constexpr adc_channel_t ADC_CH_TEST  = ADC_CHANNEL_5;  ///< GPIO6 = ADC1_CH5
+
+
 // ─── MIDI ─────────────────────────────────────────────────
 constexpr uint8_t MIDI_CHANNEL  = 1;
 constexpr uint8_t CC_FADER_1    = 1;   ///< フェーダー CC: 1〜NUM_FADERS
@@ -34,7 +38,8 @@ constexpr int     FADER_RAW_MIN = 200; ///< fader bottom (measured)
 constexpr int     FADER_RAW_MAX = 3972;///< fader top (measured)
 constexpr int     KNOB_RAW_MIN  = 0;    ///< knob bottom (measured)
 constexpr int     KNOB_RAW_MAX  = 3972; ///< knob top (measured)
-constexpr int     MIDI_BTN_THRETHOLD = 63; ///< button on/off threthold
+constexpr int     BTN_RAW_THRETHOLD = 1600; ///< button vol 127/0 threthold
+constexpr int     BTN_MIDI_THRETHOLD = 64; ///< button midi on/off threthold
  
 // ─── タスク設定 ───────────────────────────────────────────
 constexpr int MIDI_QUEUE_LEN = 32;

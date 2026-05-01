@@ -4,6 +4,7 @@
 #include "tinyusb.h"
 #include "usb_descriptors.h"
 #include "config.h"
+#include "adc_unit.h"
 #include "analog_input.h"
 #include "mux_controller.h"
 #include "mux_channel.h"
@@ -61,12 +62,11 @@ extern "C" void app_main(void) {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     
 #ifndef USE_STUBS
-    static MuxController    mux( ADC_CH_MUX_X, ADC_ATTEN,
-                                PIN_MUX_A, PIN_MUX_B);
+    static Adc1Unit         adc1;
+    static MuxController    mux(adc1, ADC_CH_MUX_X, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
     static MuxChannel       fader(mux, 0);
     static MuxChannel       knob1(mux, 1);
-    static MuxChannel       btn(mux, 2);
-    // static AdcAnalogInput     btn(ADC_CH_TEST);
+    static AdcAnalogInput   btn(adc1, ADC_CH_TEST, ADC_ATTEN);
     // static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
     // static LedManager       led;
     static UsbMidiSender    sender;
