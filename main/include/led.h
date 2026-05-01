@@ -40,11 +40,3 @@ public:
 private:
     struct led_strip_t* strip_ = nullptr; ///< led_strip ドライバハンドル
 };
-
-/** @brief テスト用スタブ */
-class StubLed : public ILed {
-public:
-    void set_color(int, RgbColor) override {}
-    void refresh() override {}
-    void clear() override {}
-};

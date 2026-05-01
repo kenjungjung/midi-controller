@@ -57,11 +57,3 @@ private:
     /** @brief MidiEvent を 16 文字の表示行にフォーマットする */
     static std::array<char, Display::COLS + 1> format_event(const MidiEvent& ev, bool outgoing);
 };
-
-/** @brief テスト用スタブ */
-class StubDisplay : public IDisplay {
-public:
-    void push_event(const MidiEvent&, bool) override {}
-    void render() override {}
-    void set_title(const char*) override {}
-};

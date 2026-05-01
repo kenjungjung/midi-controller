@@ -60,7 +60,6 @@ extern "C" void app_main(void) {
     tusb_cfg.event_arg              = nullptr;
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     
-#ifndef USE_STUBS
     static Adc1Unit         adc1;
     static MuxController    mux(adc1, ADC_CH_MUX_X, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
     static MuxChannel       fader(mux, 0);
@@ -69,14 +68,6 @@ extern "C" void app_main(void) {
     static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;
-#else
-    static StubAnalogInput  fader;
-    static StubAnalogInput  knob1, knob2, knob3;
-    static StubButtonLed    btn;
-    static StubLed          led;
-    static UsbMidiSender    sender;
-    static StubDisplay      display;
-#endif
 
     midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
 

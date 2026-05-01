@@ -31,12 +31,3 @@ private:
     adc_channel_t     channel_;
     bool              cali_valid_;
 };
-
-/** @brief テスト用スタブ: 固定値を返す */
-class StubAnalogInput : public IAnalogInput {
-public:
-    explicit StubAnalogInput(uint16_t fixed_value = 64) : value_(fixed_value) {}
-    uint16_t read() const override { return value_; }
-private:
-    uint16_t value_;
-};

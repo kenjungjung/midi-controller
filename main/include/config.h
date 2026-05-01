@@ -53,5 +53,3 @@ constexpr int PRIO_MIDI      = 4;
 constexpr int PRIO_DISPLAY   = 3;
 constexpr int CORE_USB       = 1;  ///< UsbTask + MidiTask
 constexpr int CORE_INPUT     = 0;  ///< InputTask + DisplayTask
-
-// #define USE_STUBS  // uncomment to replace hardware with stubs
