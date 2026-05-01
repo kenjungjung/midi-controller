@@ -1,17 +1,16 @@
 #include "analog_input.h"
 #include "esp_log.h"
-#include "esp_err.h"
 
 static const char* TAG = "AdcAnalogInput";
 
-AdcAnalogInput::AdcAnalogInput(adc_unit_t unit, adc_channel_t channel, int vol_min, int vol_max,
+AdcAnalogInput::AdcAnalogInput(adc_channel_t channel,
                                adc_atten_t atten)
     : adc_handle_(nullptr), cali_handle_(nullptr),
-      channel_(channel), vol_min_(vol_min), vol_max_(vol_max), cali_valid_(false)
+      channel_(channel), cali_valid_(false)
 {
     // ADC ユニット初期化
     adc_oneshot_unit_init_cfg_t unit_cfg = {
-        .unit_id  = unit,
+        .unit_id  = ADC_UNIT_1,
         .ulp_mode = ADC_ULP_MODE_DISABLE,
     };
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit_cfg, &adc_handle_));
@@ -25,7 +24,7 @@ AdcAnalogInput::AdcAnalogInput(adc_unit_t unit, adc_channel_t channel, int vol_m
 
     // ESP32-S3 は curve_fitting のみ対応
     adc_cali_curve_fitting_config_t cali_cfg = {
-        .unit_id  = unit,
+        .unit_id  = ADC_UNIT_1,
         .chan     = channel_,
         .atten    = atten,
         .bitwidth = ADC_BITWIDTH_12,
@@ -47,20 +46,16 @@ AdcAnalogInput::~AdcAnalogInput() {
     }
 }
 
-uint16_t AdcAnalogInput::read_midi_cc() {
+uint16_t AdcAnalogInput::read() const {
     int raw = 0;
     ESP_ERROR_CHECK(adc_oneshot_read(adc_handle_, channel_, &raw));
 
-    if (cali_valid_) {
-        int voltage_mv = 0;
-        ESP_ERROR_CHECK(adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv));
-        // mV（0–3300）を 0–4095 にスケール
-        raw =  static_cast<uint16_t>(voltage_mv * 4095 / 3300);
+    if (!cali_valid_) {
+        return raw;
     }
     
-    int clamped = raw < vol_min_ ? vol_min_
-                : raw > vol_max_ ? vol_max_ : raw;
-                
-    ESP_LOGI("AdcAnalogInput", "vol=%4d", raw);
-    return static_cast<uint8_t>((clamped - vol_min_) * 127 / (vol_max_ - vol_min_));
+    int voltage_mv = 0;
+    ESP_ERROR_CHECK(adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv));
+    // mV（0–3300）を 0–4095 にスケール
+    return static_cast<uint16_t>(voltage_mv * 4095 / 3300);
 }

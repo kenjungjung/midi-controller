@@ -5,14 +5,14 @@
 
 static const char* TAG = "MuxAdc";
 
-MuxController::MuxController(adc_unit_t unit, adc_channel_t x, adc_atten_t atten,
+MuxController::MuxController(adc_channel_t x, adc_atten_t atten,
                              gpio_num_t pin_a, gpio_num_t pin_b)
     : cali_handle_(nullptr), cali_valid_(false),
       x_(x), pin_a_(pin_a), pin_b_(pin_b)
 {
     // ADC unit 初期化
     adc_oneshot_unit_init_cfg_t unit_cfg = {};
-    unit_cfg.unit_id   = unit;
+    unit_cfg.unit_id   = ADC_UNIT_1;
     unit_cfg.ulp_mode  = ADC_ULP_MODE_DISABLE;
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit_cfg, &adc_handle_));
 
@@ -24,7 +24,7 @@ MuxController::MuxController(adc_unit_t unit, adc_channel_t x, adc_atten_t atten
 
     // キャリブレーション（ESP32-S3: curve fitting のみ）
     adc_cali_curve_fitting_config_t cali_cfg = {};
-    cali_cfg.unit_id  = unit;
+    cali_cfg.unit_id  = ADC_UNIT_1;
     cali_cfg.chan     = x;
     cali_cfg.atten    = atten;
     cali_cfg.bitwidth = ADC_BITWIDTH_12;

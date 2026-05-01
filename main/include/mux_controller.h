@@ -15,13 +15,12 @@
 class MuxController {
 public:
     /** @brief 初期化
-     *  @param unit    ADCユニット（ADC_UNIT_1 のみ）
      *  @param x       X（Xセクションコモン）が接続されたADCチャンネル
      *  @param atten   入力レンジ
      *  @param pin_a   セレクト A GPIO
      *  @param pin_b   セレクト B GPIO
      */
-    MuxController(adc_unit_t unit, adc_channel_t x, adc_atten_t atten,
+    MuxController(adc_channel_t x, adc_atten_t atten,
                   gpio_num_t pin_a, gpio_num_t pin_b);
     ~MuxController();
 

@@ -7,6 +7,14 @@
 
 static const char* TAG = "Controller";
 
+static uint8_t to_midi_cc(uint16_t vol, uint16_t vol_min, uint16_t vol_max){
+    
+    int clamped = vol < vol_min ? vol_min
+                : vol > vol_max ? vol_max : vol;
+                
+    return static_cast<uint8_t>((clamped - vol_min) * 127 / (vol_max - vol_min));
+}
+
 Controller::Controller(const ControllerConfig& cfg)
     : cfg_(cfg)
 {
@@ -36,11 +44,13 @@ void Controller::input_loop() {
         if (connected) {
             // フェーダー
             for (int i = 0; i < NUM_FADERS; ++i) {
-                uint8_t new_cc = cfg_.faders[i]->read_midi_cc();
+                auto vol = cfg_.faders[i]->read();
+                auto new_cc = to_midi_cc(vol, FADER_RAW_MIN, FADER_RAW_MAX);
                 int delta = (prev_fader_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_fader_cc_[i]));
                 if (delta >= DEADBAND) {
+                    ESP_LOGI("MIDI out", "fader %d vol=%4d, val=%3d", i, vol, new_cc);
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_FADER_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
@@ -50,11 +60,13 @@ void Controller::input_loop() {
 
             // ノブ
             for (int i = 0; i < NUM_KNOBS; ++i) {
-                uint8_t new_cc = cfg_.knobs[i]->read_midi_cc();
+                auto vol = cfg_.knobs[i]->read();
+                auto new_cc = to_midi_cc(vol, KNOB_RAW_MIN, KNOB_RAW_MAX);
                 int delta = (prev_knob_cc_[i] == 0xFFu)
                     ? DEADBAND
                     : std::abs(static_cast<int>(new_cc) - static_cast<int>(prev_knob_cc_[i]));
                 if (delta >= DEADBAND) {
+                    ESP_LOGI("MIDI out", "knob %d vol=%4d, val=%3d", i, vol, new_cc);
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_KNOB_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
@@ -64,15 +76,18 @@ void Controller::input_loop() {
 
             // ボタン
             for (int i = 0; i < NUM_BUTTONS; ++i) {
-                uint8_t new_cc = cfg_.buttons[i]->read_midi_cc();
+                auto vol = cfg_.buttons[i]->read();
+                auto new_cc = to_midi_cc(vol, KNOB_RAW_MIN, KNOB_RAW_MAX);
                 bool pressed = (new_cc >= MIDI_BTN_THRETHOLD);
                 if (pressed && !prev_btn_[i]) {
-                    // cfg_.buttons[i]->set_led(true);
+                    // cfg_.buttons[i]->set_led(true);                    
+                    ESP_LOGI("MIDI out", "button %d vol=%4d, ON", i, vol);
                     MidiEvent ev{MidiEvent::Type::NOTE_ON, MIDI_CHANNEL,
                                  static_cast<uint8_t>(NOTE_BUTTON_1 + i), 127};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
                 } else if (!pressed && prev_btn_[i]) {
                     // cfg_.buttons[i]->set_led(false);
+                    ESP_LOGI("MIDI out", "button %d vol=%4d, OFF", i, vol);
                     MidiEvent ev{MidiEvent::Type::NOTE_OFF, MIDI_CHANNEL,
                                  static_cast<uint8_t>(NOTE_BUTTON_1 + i), 0};
                     xQueueSend(cfg_.midi_queue, &ev, 0);

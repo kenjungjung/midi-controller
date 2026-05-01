@@ -59,15 +59,16 @@ extern "C" void app_main(void) {
     tusb_cfg.event_cb               = usb_event_cb; // これ反応しない。。後でやる
     tusb_cfg.event_arg              = nullptr;
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-
+    
 #ifndef USE_STUBS
-    static MuxController    mux(ADC_UNIT_MUX, ADC_CH_MUX_X, ADC_ATTEN,
+    static MuxController    mux( ADC_CH_MUX_X, ADC_ATTEN,
                                 PIN_MUX_A, PIN_MUX_B);
-    static MuxChannel       fader(mux, 0, FADER_RAW_MIN, FADER_RAW_MAX);
-    static MuxChannel       knob1(mux, 1, KNOB_RAW_MIN, KNOB_RAW_MAX);
-    static MuxChannel       btn(mux, 2, KNOB_RAW_MIN, KNOB_RAW_MAX);
+    static MuxChannel       fader(mux, 0);
+    static MuxChannel       knob1(mux, 1);
+    static MuxChannel       btn(mux, 2);
+    // static AdcAnalogInput     btn(ADC_CH_TEST);
     // static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
-    static LedManager       led;
+    // static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;
 #else
@@ -85,7 +86,7 @@ extern "C" void app_main(void) {
         .faders   = { &fader },
         .knobs    = { &knob1 },// { &knob1, &knob2, &knob3 },
         .buttons  = { &btn },
-        .led      = &led,
+        .led      = {},// &led,
         .display  = &display,
         .sender   = &sender,
         .midi_queue = midi_queue,

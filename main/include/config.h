@@ -21,7 +21,6 @@ constexpr gpio_num_t    PIN_MUX_A    = GPIO_NUM_1;      ///< セレクト A     
 constexpr gpio_num_t    PIN_MUX_B    = GPIO_NUM_2;      ///< セレクト B          （ADC1_CH1）
 //   Xコモン（ADC入力） ※PIN_MUX_A/Bと重複しないGPIOを選ぶこと
 constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7）
-constexpr adc_unit_t    ADC_UNIT_MUX  = ADC_UNIT_1;
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US = 10;              ///< チャンネル切替後の整定待ち [µs]
 

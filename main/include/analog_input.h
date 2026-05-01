@@ -12,28 +12,25 @@ public:
      *  @return mV値をADC12bitレンジ（0–4095）に再スケールした値
      *          （0mV → 0, 3300mV → 4095）
      */
-    virtual uint16_t read_midi_cc() = 0;
+    virtual uint16_t read() const = 0;
 };
 
 /** @brief ESP32-S3 ADC1 を使ったアナログ入力実装 */
 class AdcAnalogInput : public IAnalogInput {
 public:
     /** @brief ADCユニットとチャンネルを指定して初期化する
-     *  @param unit    ADCユニット（ADC_UNIT_1 のみ使用可）
      *  @param channel ADCチャンネル
      *  @param atten   入力レンジ（デフォルト: ADC_ATTEN_DB_12 = 0–3.3V）
      */
-    AdcAnalogInput(adc_unit_t unit, adc_channel_t channel, int vol_min, int vol_max,
+    AdcAnalogInput(adc_channel_t channel,
                    adc_atten_t atten = ADC_ATTEN_DB_12);
     ~AdcAnalogInput() override;
 
-    uint16_t read_midi_cc() override;
+    uint16_t read() const override;
 
 private:
     adc_oneshot_unit_handle_t adc_handle_;
     adc_cali_handle_t         cali_handle_;
     adc_channel_t             channel_;
-    int                       vol_min_;
-    int                       vol_max_;
     bool                      cali_valid_;
 };
