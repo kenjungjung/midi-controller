@@ -136,15 +136,14 @@ void Controller::input_loop() {
     }
 }
 
-/** @brief SysEx を解析してLED色を更新する
- *  フォーマット: F0 7D 01 <index> <R> <G> <B> F7
- *  R/G/B は 7bit（0–127）。LED は 8bit に変換して set_color() する。
+/** @brief SysEx を解析してLED色・ボリュームを更新する
+ *  カラー:   F0 7D 01 <index> <R> <G> <B> F7  (8バイト)
+ *  ボリューム: F0 7D 03 <index> <vol> F7       (6バイト)
+ *  R/G/B/vol は 7bit（0–127）。
  */
 static void handle_sysex(const uint8_t* buf, size_t len, ILed* led) {
-    // 最小長: F0 7D type index data... F7 = 最低7バイト（カラーは8バイト）
-    if (len < 7 || buf[0] != 0xF0u || buf[1] != 0x7Du || buf[len - 1] != 0xF7u) return;
+    if (len < 6 || buf[0] != 0xF0u || buf[1] != 0x7Du || buf[len - 1] != 0xF7u) return;
 
-    ESP_LOGI("SysEx", "track %X", buf);
     uint8_t type  = buf[2];
     uint8_t index = buf[3];
 
@@ -157,6 +156,11 @@ static void handle_sysex(const uint8_t* buf, size_t len, ILed* led) {
         ESP_LOGI("SysEx", "track[%d] color R=%d G=%d B=%d", index, r, g, b);
         led->set_color(index, {r, g, b});
         led->refresh();
+    } else if (type == 0x03u && len == 6u) {
+        // トラックボリューム: F0 7D 03 <index> <vol> F7
+        uint8_t vol = buf[4];  // 0–127
+        ESP_LOGI("SysEx", "track[%d] volume=%d", index, vol);
+        // TODO: ボリュームの使い道（ディスプレイ表示など）が決まったらここに追加する
     }
 }
 
