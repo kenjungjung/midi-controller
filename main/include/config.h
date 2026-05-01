@@ -2,11 +2,6 @@
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 
-// ─── ボタン ───────────────────────────────────────────────
-constexpr gpio_num_t PIN_BUTTON_1    = GPIO_NUM_16; ///< タクトスイッチ
-constexpr gpio_num_t PIN_LED_BTN_SW  = GPIO_NUM_17; ///< ST12-401FCG スイッチ入力（Active Low）
-constexpr gpio_num_t PIN_LED_BTN_LED = GPIO_NUM_18; ///< ST12-401FCG LED出力（High=点灯、68Ω直列）
-
 // ─── OLED ─────────────────────────────────────────────────
 constexpr gpio_num_t PIN_OLED_SDA = GPIO_NUM_8;
 constexpr gpio_num_t PIN_OLED_SCL = GPIO_NUM_9;

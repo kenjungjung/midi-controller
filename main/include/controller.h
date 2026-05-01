@@ -6,7 +6,6 @@
 #include "config.h"
 #include "midi_event.h"
 #include "analog_input.h"
-#include "button.h"
 #include "midi_sender.h"
 #include "display.h"
 #include "led.h"

@@ -8,7 +8,6 @@
 #include "analog_input.h"
 #include "mux_controller.h"
 #include "mux_channel.h"
-#include "button.h"
 #include "led.h"
 #include "usb_midi.h"
 #include "display.h"
@@ -67,7 +66,6 @@ extern "C" void app_main(void) {
     static MuxChannel       fader(mux, 0);
     static MuxChannel       knob1(mux, 1);
     static MuxChannel       btn(mux, 2);
-    // static LedGpioButton    btn(PIN_LED_BTN_SW, PIN_LED_BTN_LED);
     // static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;
