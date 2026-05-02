@@ -10,6 +10,7 @@ MuxController::MuxController(Adc1Unit& unit, adc_channel_t x, adc_atten_t atten,
     : unit_(unit), cali_handle_(nullptr), cali_valid_(false),
       x_(x), pin_a_(pin_a), pin_b_(pin_b)
 {
+    raws_prev_.fill(0xFFF);
     unit_.config_channel(x, atten);
 
     adc_cali_curve_fitting_config_t cali_cfg = {};
@@ -47,12 +48,17 @@ void MuxController::select(uint8_t mux_ch) const
     gpio_set_level(pin_b_, (mux_ch >> 1) & 1);
 }
 
-uint16_t MuxController::read(uint8_t mux_ch) const
+uint16_t MuxController::read(uint8_t mux_ch)
 {
     select(mux_ch);
     esp_rom_delay_us(MUX_SETTLE_US);
 
     int raw = unit_.read_raw(x_);
+
+    if(std::abs(raws_prev_[mux_ch] - raw) <= RAW_DEMANDED) {
+        return raws_prev_[mux_ch];
+    }
+    raws_prev_[mux_ch] = raw;
 
     if (cali_valid_) {
         int voltage_mv = 0;

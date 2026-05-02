@@ -4,7 +4,7 @@
 MuxChannel::MuxChannel(MuxController& ctrl, uint8_t ch)
     : ctrl_(ctrl), ch_(ch) {}
 
-uint16_t MuxChannel::read() const 
+uint16_t MuxChannel::read()
 {
     return ctrl_.read(ch_);
 }

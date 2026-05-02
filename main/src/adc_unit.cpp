@@ -24,7 +24,7 @@ void Adc1Unit::config_channel(adc_channel_t ch, adc_atten_t atten)
 
 int Adc1Unit::read_raw(adc_channel_t ch) const
 {
-    int raw = 0;    
+    int raw = 0;
     ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw)); // ダミーリード
     ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw));
     return raw;

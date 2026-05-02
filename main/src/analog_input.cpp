@@ -1,11 +1,12 @@
 #include "analog_input.h"
 #include "esp_log.h"
+#include "config.h"
 
 static const char* TAG = "AdcAnalogInput";
 
 AdcAnalogInput::AdcAnalogInput(Adc1Unit& unit, adc_channel_t channel, adc_atten_t atten)
     : unit_(unit), cali_handle_(nullptr),
-      channel_(channel), cali_valid_(false)
+      channel_(channel), cali_valid_(false), raw_prev_(0xFFFF)
 {
     unit_.config_channel(channel, atten);
 
@@ -29,9 +30,13 @@ AdcAnalogInput::~AdcAnalogInput()
     }
 }
 
-uint16_t AdcAnalogInput::read() const
+uint16_t AdcAnalogInput::read()
 {
     int raw = unit_.read_raw(channel_);
+    if(std::abs(raw_prev_ - raw) <= RAW_DEMANDED) {
+        return raw_prev_;
+    }
+    raw_prev_ = raw;
 
     if (!cali_valid_) {
         return static_cast<uint16_t>(raw);

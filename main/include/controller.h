@@ -54,5 +54,5 @@ private:
 
     std::array<uint8_t, NUM_FADERS>  prev_fader_cc_; ///< デッドバンド用前回値（0xFF=強制送信）
     std::array<uint8_t, NUM_KNOBS>   prev_knob_cc_;  ///< デッドバンド用前回値
-    std::array<bool,    NUM_BUTTONS> prev_btn_;       ///< ボタン前回状態
+    std::array<bool,    NUM_BUTTONS> prev_btn_;      ///< ボタン前回状態
 };

@@ -9,7 +9,7 @@
 class IAnalogInput {
 public:
     virtual ~IAnalogInput() = default;
-    virtual uint16_t read() const = 0;
+    virtual uint16_t read() = 0;
 };
 
 /** @brief ESP32-S3 ADC1 を使ったアナログ入力実装 */
@@ -23,11 +23,12 @@ public:
     AdcAnalogInput(Adc1Unit& unit, adc_channel_t channel, adc_atten_t atten = ADC_ATTEN_DB_12);
     ~AdcAnalogInput() override;
 
-    uint16_t read() const override;
+    uint16_t read() override;
 
 private:
     Adc1Unit&         unit_;
     adc_cali_handle_t cali_handle_;
     adc_channel_t     channel_;
     bool              cali_valid_;
+    int               raw_prev_;
 };

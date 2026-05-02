@@ -5,6 +5,8 @@
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
 #include "adc_unit.h"
+#include <array>
+#include "config.h"
 
 /** @brief 74HC4052AP デュアル4chマルチプレクサのコントローラー
  *
@@ -25,7 +27,7 @@ public:
     ~MuxController();
 
     /** @brief 指定チャンネルを選択してキャリブレーション済み値（0–4095）を返す */
-    uint16_t read(uint8_t mux_ch) const;
+    uint16_t read(uint8_t mux_ch);
 
 private:
     void select(uint8_t mux_ch) const;
@@ -36,4 +38,5 @@ private:
     adc_channel_t           x_;
     const gpio_num_t      pin_a_;
     const gpio_num_t      pin_b_;
+    std::array<int, NUM_MUC_CH_MAX>    raws_prev_;
 };

@@ -19,7 +19,7 @@ constexpr gpio_num_t    PIN_MUX_B    = GPIO_NUM_2;      ///< セレクト B     
 constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7）
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US = 10;              ///< チャンネル切替後の整定待ち [µs]
-
+constexpr int           NUM_MUC_CH_MAX = 4; ///< 4052のch
 constexpr int NUM_FADERS  = 1; ///< フェーダー本数（Phase4 で 12）
 constexpr int NUM_KNOBS   = 1; ///< ノブ本数
 constexpr int NUM_BUTTONS = 1; ///< ボタン本数（Phase3 で 10）
@@ -33,11 +33,11 @@ constexpr uint8_t MIDI_CHANNEL  = 1;
 constexpr uint8_t CC_FADER_1    = 1;   ///< フェーダー CC: 1〜NUM_FADERS
 constexpr uint8_t CC_KNOB_1     = 20;  ///< ノブ CC: 20〜(20+NUM_KNOBS-1)
 constexpr uint8_t NOTE_BUTTON_1 = 36;  ///< ボタン Note: 36〜(36+NUM_BUTTONS-1)
-constexpr int     DEADBAND      = 1;   ///< minimum CC change threshold
-constexpr int     FADER_RAW_MIN = 200; ///< fader bottom (measured)
-constexpr int     FADER_RAW_MAX = 3972;///< fader top (measured)
+constexpr int     RAW_DEMANDED  = 20;  ///< minimum voltage change threshold
+constexpr int     FADER_RAW_MIN = 0; ///< fader bottom (measured)
+constexpr int     FADER_RAW_MAX = 0xfff;///< fader top (measured)
 constexpr int     KNOB_RAW_MIN  = 0;    ///< knob bottom (measured)
-constexpr int     KNOB_RAW_MAX  = 3972; ///< knob top (measured)
+constexpr int     KNOB_RAW_MAX  = 0xfff; ///< knob top (measured)
 constexpr int     BTN_RAW_THRETHOLD = 1600; ///< button vol 127/0 threthold
 constexpr int     BTN_MIDI_THRETHOLD = 64; ///< button midi on/off threthold
  

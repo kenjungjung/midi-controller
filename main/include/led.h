@@ -1,5 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <cstdlib>
+#include <array>
+#include "config.h"
 
 /** @brief RGB カラー値 */
 struct RgbColor {
@@ -24,6 +27,8 @@ public:
 
     /** @brief 全 LED を消灯する */
     virtual void clear() = 0;
+
+    virtual void excute(const uint8_t* buf, size_t len) = 0;
 };
 
 /** @brief PL9823-F5 (WS2812B 互換) を RMT で制御する */
@@ -36,7 +41,9 @@ public:
     void set_color(int index, RgbColor color) override;
     void refresh() override;
     void clear() override;
+    void excute(const uint8_t* buf, size_t len) override;
 
 private:
     struct led_strip_t* strip_ = nullptr; ///< led_strip ドライバハンドル
+    std::array<uint8_t, NUM_FADERS> volumes_ = {0};
 };

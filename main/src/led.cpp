@@ -45,3 +45,46 @@ void LedManager::refresh() {
 void LedManager::clear() {
     led_strip_clear(strip_);
 }
+
+void LedManager::excute(const uint8_t *buf, size_t len)
+{
+    uint8_t type  = buf[2];
+    uint8_t index = buf[3];
+
+    if (type == 0x01u && len == 8u) {
+        // トラックカラー: F0 7D 01 <index> <R> <G> <B> F7
+        if (index >= NUM_LEDS) return;
+        uint8_t r = static_cast<uint8_t>(buf[4] * 2u / LED_DARKNESS);
+        uint8_t g = static_cast<uint8_t>(buf[5] * 2u / LED_DARKNESS);
+        uint8_t b = static_cast<uint8_t>(buf[6] * 2u / LED_DARKNESS);
+        ESP_LOGI("SysEx", "track[%d] color R=%d G=%d B=%d", index, r, g, b);
+        // led->set_color(index, {r, g, b});
+        // led->refresh();
+    } else if (type == 0x03u && len == 6u) {
+        // トラックボリューム: F0 7D 03 <index> <vol> F7
+        uint8_t vol = buf[4];  // 0–127
+        if(volumes_[index] == vol) {
+            return;
+        }
+        if(index == 0) {
+            
+            const int VOL_MIN = 64;  // -12dB
+            const int VOL_MAX = 117; // 0dB
+
+            // ボリューム値をLED点灯数に変換（0dBFS以上はすべて点灯）
+            int on_num = (vol - VOL_MIN) * NUM_LEDS / (VOL_MAX - VOL_MIN);
+            if (vol >= VOL_MAX) on_num = NUM_LEDS; // 0dBFS以上で全点灯
+            if (vol > 0 && on_num <= 0) on_num = 1; // 無音でないのにLEDが0本になる場合は最低1本点灯
+            if (on_num < 0) on_num = 0; // 負値にならないようにクランプ
+            for (uint32_t i = 0; i < NUM_LEDS; i++) {
+                if (i < on_num) {
+                    set_color(i, {10, 10, 10});
+                } else {
+                    set_color(i, {0, 0, 0});
+                }
+            }
+            refresh();
+            ESP_LOGI("SysEx", "track[%d] volume=%d, on_num=%d", index, vol, on_num);
+        }
+    }
+}

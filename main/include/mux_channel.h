@@ -12,7 +12,7 @@ public:
     MuxChannel(MuxController& ctrl, uint8_t ch);
 
     /** @brief チャンネルを選択してキャリブレーション済み値（0–4095）を返す */
-    uint16_t read() const override;
+    uint16_t read() override;
 
 private:
     MuxController& ctrl_;
