@@ -38,5 +38,5 @@ private:
     adc_channel_t           x_;
     const gpio_num_t      pin_a_;
     const gpio_num_t      pin_b_;
-    std::array<int, NUM_MUC_CH_MAX>    raws_prev_;
+    std::array<int, NUM_MUC_CH_MAX>    raws_prev_;  ///< デッドバンド比較用（平均値）
 };

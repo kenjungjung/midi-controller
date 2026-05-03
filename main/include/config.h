@@ -18,7 +18,8 @@ constexpr gpio_num_t    PIN_MUX_B    = GPIO_NUM_2;      ///< セレクト B     
 //   Xコモン（ADC入力） ※PIN_MUX_A/Bと重複しないGPIOを選ぶこと
 constexpr adc_channel_t ADC_CH_MUX_X = ADC_CHANNEL_6;  ///< Xコモン（GPIO7）
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
-constexpr int           MUX_SETTLE_US = 20;              ///< チャンネル切替後の整定待ち [µs]
+constexpr int           MUX_SETTLE_US    = 100;           ///< チャンネル切替後の整定待ち [µs]
+constexpr int           ADC_OVERSAMPLE_N = 8;            ///< ADCオーバーサンプリング回数（交互ノイズ平均化）
 constexpr int           NUM_MUC_CH_MAX = 4; ///< 4052のch
 constexpr int NUM_FADERS  = 1; ///< フェーダー本数（Phase4 で 12）
 constexpr int NUM_KNOBS   = 1; ///< ノブ本数

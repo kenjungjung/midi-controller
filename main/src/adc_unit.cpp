@@ -1,4 +1,5 @@
 #include "adc_unit.h"
+#include "config.h"
 #include "esp_log.h"
 
 Adc1Unit::Adc1Unit()
@@ -25,7 +26,11 @@ void Adc1Unit::config_channel(adc_channel_t ch, adc_atten_t atten)
 int Adc1Unit::read_raw(adc_channel_t ch) const
 {
     int raw = 0;
-    ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw)); // ダミーリード
-    ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw));
-    return raw;
+    ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw)); // ダミーリード（残留電荷破棄）
+    int sum = 0;
+    for (int i = 0; i < ADC_OVERSAMPLE_N; ++i) {
+        ESP_ERROR_CHECK(adc_oneshot_read(handle_, ch, &raw));
+        sum += raw;
+    }
+    return sum / ADC_OVERSAMPLE_N;
 }
