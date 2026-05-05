@@ -36,6 +36,8 @@ public:
 
     static constexpr char TITLE[]      = "   Tp NUM VAL      ";
     static constexpr char DISCONECTED[] = "  DISCONNECTED";
+    static constexpr char INITIAL_TITLE[] = "  kenjung MIDI";
+    
 
 private:
     static constexpr uint8_t LINES = 7;

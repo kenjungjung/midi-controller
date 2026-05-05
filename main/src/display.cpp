@@ -155,6 +155,8 @@ Display::Display()
         send_data(blank, sizeof(blank));
     }
 
+    
+    set_title(Display::INITIAL_TITLE);
     ESP_LOGI(TAG, "SSD1306 initialized");
 }
 

@@ -52,8 +52,6 @@ void Controller::reset_prev_cc() {
 
 void Controller::notify_connected(bool connected) {
     cfg_.display->set_title(connected ? Display::TITLE : Display::DISCONECTED);
-
-
 }
 
 void Controller::input_loop() {
