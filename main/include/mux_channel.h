@@ -10,7 +10,7 @@ public:
      *  @param bus   MuxBus::X または MuxBus::Y
      *  @param ch    マルチプレクサチャンネル（0–3）
      */
-    MuxChannel(MuxController& ctrl, MuxBus bus, uint8_t ch);
+    MuxChannel(MuxController& ctrl, MuxBus bus, uint8_t ch, int cali_raw_min, int cali_raw_max);
 
     /** @brief チャンネルを選択してキャリブレーション済み値（0–4095）を返す */
     uint16_t read() override;
@@ -19,4 +19,6 @@ private:
     MuxController& ctrl_;
     MuxBus         bus_;
     uint8_t        ch_;
+    int            cali_raw_min_;
+    int            cali_raw_max_;
 };

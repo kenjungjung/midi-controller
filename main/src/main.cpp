@@ -68,16 +68,15 @@ extern "C" void app_main(void) {
     // U5: ポテンショメータ RV9-RV12（Y-COM=GPIO14/ADC2_CH3、X側は未接続）
     static MuxController    muxU5(adc2, ADC_CH_U5_X, ADC_CH_U5_Y, ADC_ATTEN, PIN_U5_A, PIN_U5_B);
     // U2 Xセクション: X0=RV7, X1=RV6, X2=RV5, X3=RV8
-
-    static MuxChannel       knob_RV5(muxU2, MuxBus::X, 2);
-    static MuxChannel       knob_RV6(muxU2, MuxBus::X, 1);
-    static MuxChannel       knob_RV7(muxU2, MuxBus::X, 0);
-    static MuxChannel       knob_RV8(muxU2, MuxBus::X, 3);
-
-    static MuxChannel       knob_RV9(muxU5, MuxBus::Y, 0);
-    static MuxChannel       knob_RV10(muxU5, MuxBus::Y, 2);
-    static MuxChannel       knob_RV11(muxU5, MuxBus::Y, 1);
-    static MuxChannel       knob_RV12(muxU5, MuxBus::Y, 3);
+    static MuxChannel       knob_RV5(muxU2, MuxBus::X, 2, 0, 3972);
+    static MuxChannel       knob_RV6(muxU2, MuxBus::X, 1, 0, 3972);
+    static MuxChannel       knob_RV7(muxU2, MuxBus::X, 0, 0, 3972);
+    static MuxChannel       knob_RV8(muxU2, MuxBus::X, 3, 0, 3972);
+    // U5 Yセクション: Y0=RV9, Y1=RV11, Y2=RV10, Y3=RV12
+    static MuxChannel       knob_RV9 (muxU5, MuxBus::Y, 0, 0, 3872);
+    static MuxChannel       knob_RV10(muxU5, MuxBus::Y, 2, 0, 3872);
+    static MuxChannel       knob_RV11(muxU5, MuxBus::Y, 1, 0, 3872);
+    static MuxChannel       knob_RV12(muxU5, MuxBus::Y, 3, 0, 3872);
 
     static LedManager       led;
     static UsbMidiSender    sender;
@@ -87,7 +86,8 @@ extern "C" void app_main(void) {
 
     static ControllerConfig cfg = {
         .faders   = {},
-        .knobs    = { &knob_RV5, &knob_RV6, &knob_RV7, &knob_RV8, &knob_RV9, &knob_RV10, &knob_RV11, &knob_RV12 },
+        .knobs    = { &knob_RV5, &knob_RV6, &knob_RV7, &knob_RV8,
+                      &knob_RV9, &knob_RV10, &knob_RV11, &knob_RV12 },
         .buttons  = {},
         .led      = &led,
         .display  = &display,

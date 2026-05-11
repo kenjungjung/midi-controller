@@ -1,5 +1,6 @@
 #include "mux_controller.h"
 #include "iadc_unit.h"
+#include <algorithm>
 #include "esp_rom_sys.h"
 #include "esp_log.h"
 #include "config.h"
@@ -61,34 +62,35 @@ void MuxController::select(uint8_t mux_ch) const
 }
 
 uint16_t MuxController::read_com(adc_channel_t ch, adc_cali_handle_t cali, bool cali_valid,
-                                  std::array<int, NUM_MUC_CH_MAX>& raws_prev, uint8_t mux_ch)
+                                  std::array<int, NUM_MUC_CH_MAX>& raws_prev, uint8_t mux_ch, int cali_raw_min, int cali_raw_max)
 {
-    int raw = unit_.read_raw(ch);
-
-    int normalized = raw;
+    int adc_raw = unit_.read_raw(ch);
+    int vol_mv = 0;
+    int cali_raw = adc_raw;
     if (cali_valid) {
-        int voltage_mv = 0;
-        adc_cali_raw_to_voltage(cali, raw, &voltage_mv);
-        normalized = voltage_mv * 4095 / 3300;
+        adc_cali_raw_to_voltage(cali, adc_raw, &vol_mv);
+        cali_raw = std::clamp(vol_mv, 0, 3300) * 4095 / 3300;
     }
-    if (normalized < 0)    normalized = 0;
-    if (normalized > 4095) normalized = 4095;
 
-    if (std::abs(raws_prev[mux_ch] - normalized) <= RAW_THRETHOLD) {
+    int out = (std::clamp(cali_raw, cali_raw_min, cali_raw_max) - cali_raw_min) * 4095 / (cali_raw_max - cali_raw_min);
+
+    if (std::abs(raws_prev[mux_ch] - out) <= RAW_THRETHOLD) {
         return static_cast<uint16_t>(raws_prev[mux_ch]);
     }
-    raws_prev[mux_ch] = normalized;
-    return static_cast<uint16_t>(normalized);
+    raws_prev[mux_ch] = out;
+
+    ESP_LOGI("read_com", "ch=%d, adc_raw=%d, vol_mv=%d, cali_raw=%d, out=%d", mux_ch, adc_raw, vol_mv, cali_raw, out);
+    return static_cast<uint16_t>(out);
 }
 
-uint16_t MuxController::read(MuxBus bus, uint8_t mux_ch)
+uint16_t MuxController::read(MuxBus bus, uint8_t mux_ch, int cali_raw_min, int cali_raw_max)
 {
     select(mux_ch);
     esp_rom_delay_us(MUX_SETTLE_US);
 
     if (bus == MuxBus::X) {
-        return read_com(x_, cali_x_, cali_x_valid_, raws_prev_x_, mux_ch);
+        return read_com(x_, cali_x_, cali_x_valid_, raws_prev_x_, mux_ch, cali_raw_min, cali_raw_max);
     } else {
-        return read_com(y_, cali_y_, cali_y_valid_, raws_prev_y_, mux_ch);
+        return read_com(y_, cali_y_, cali_y_valid_, raws_prev_y_, mux_ch, cali_raw_min, cali_raw_max);
     }
 }

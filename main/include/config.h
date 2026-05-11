@@ -14,7 +14,7 @@ constexpr uint8_t    LED_DARKNESS = 50;
 // ─── 74HC4052AP マルチプレクサ ────────────────────────────
 //   全体
 constexpr int NUM_FADERS  = 0; ///< フェーダー本数
-constexpr int NUM_KNOBS   = 8; ///< ノブ本数
+constexpr int NUM_KNOBS   = 8; ///< ノブ本数（RV5-RV12）
 constexpr int NUM_BUTTONS = 0; ///< ボタン本数
 constexpr adc_atten_t   ADC_ATTEN     = ADC_ATTEN_DB_12; ///< 0–3.3V full range
 constexpr int           MUX_SETTLE_US    = 100;           ///< チャンネル切替後の整定待ち [µs]
@@ -39,15 +39,11 @@ constexpr adc_channel_t ADC_CH_TEST  = ADC_CHANNEL_5;  ///< GPIO6 = ADC1_CH5
 
 
 // ─── MIDI ─────────────────────────────────────────────────
-constexpr uint8_t MIDI_CHANNEL  = 1;
+constexpr uint8_t MIDI_CHANNEL  = 2;
 constexpr uint8_t CC_FADER_1    = 1;   ///< フェーダー CC: 1〜NUM_FADERS
 constexpr uint8_t CC_KNOB_1     = 20;  ///< ノブ CC: 20〜(20+NUM_KNOBS-1)
 constexpr uint8_t NOTE_BUTTON_1 = 36;  ///< ボタン Note: 36〜(36+NUM_BUTTONS-1)
-constexpr int     RAW_THRETHOLD  = 1;  ///< minimum voltage change threshold
-constexpr int     FADER_RAW_MIN = 0; ///< fader bottom (measured)
-constexpr int     FADER_RAW_MAX = 0xfff;///< fader top (measured)
-constexpr int     KNOB_RAW_MIN  = 0;    ///< knob bottom (measured)
-constexpr int     KNOB_RAW_MAX  = 0xfff; ///< knob top (measured)
+constexpr int     RAW_THRETHOLD  = 16;  ///< minimum adc_raw change threshold
 constexpr int     BTN_RAW_THRETHOLD = 1600; ///< button vol 127/0 threthold
 constexpr int     BTN_MIDI_THRETHOLD = 64; ///< button midi on/off threthold
  

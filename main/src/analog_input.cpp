@@ -1,4 +1,5 @@
 #include "analog_input.h"
+#include <algorithm>
 #include "esp_log.h"
 #include "config.h"
 
@@ -38,10 +39,8 @@ uint16_t AdcAnalogInput::read()
     if (cali_valid_) {
         int voltage_mv = 0;
         adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv);
-        normalized = voltage_mv * 4095 / 3300;
+        normalized = std::clamp(voltage_mv, 0, 3300) * 4095 / 3300;
     }
-    if (normalized < 0)    normalized = 0;
-    if (normalized > 4095) normalized = 4095;
 
     if (std::abs(raw_prev_ - normalized) <= RAW_THRETHOLD) {
         return static_cast<uint16_t>(raw_prev_);

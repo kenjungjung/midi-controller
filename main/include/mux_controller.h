@@ -37,12 +37,12 @@ public:
      *  @param bus    MuxBus::X または MuxBus::Y 
      *  @param mux_ch チャンネル番号（0–3）
      */
-    uint16_t read(MuxBus bus, uint8_t mux_ch);
+    uint16_t read(MuxBus bus, uint8_t mux_ch, int cali_raw_min, int cali_raw_max);
 
 private:
     void select(uint8_t mux_ch) const;
     uint16_t read_com(adc_channel_t ch, adc_cali_handle_t cali, bool cali_valid,
-                      std::array<int, NUM_MUC_CH_MAX>& raws_prev, uint8_t mux_ch);
+                      std::array<int, NUM_MUC_CH_MAX>& raws_prev, uint8_t mux_ch, int cali_raw_min, int cali_raw_max);
 
     IAdcUnit&          unit_;
     adc_cali_handle_t  cali_x_;

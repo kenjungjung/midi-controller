@@ -14,19 +14,16 @@ enum AdcType{
 };
 
 static uint8_t to_midi_cc(AdcType eType, uint16_t raw) {
-    int raw_min = 0;
-    int raw_max = 4095;
+    int cali_raw_min = 0;
+    int cali_raw_max = 4095;
 
     uint8_t midi_cc = 0;
 
     switch(eType){
-        case eFader: raw_min = FADER_RAW_MIN; raw_max = FADER_RAW_MAX;[[fallthrough]];
-        case eKnob:  raw_min = KNOB_RAW_MIN;  raw_max = KNOB_RAW_MAX;{
-            int clamped = raw < raw_min ? raw_min
-                        : raw > raw_max ? raw_max : raw;
-            midi_cc = static_cast<uint8_t>((clamped - raw_min) * 127 / (raw_max - raw_min));
+        case eFader:
+        case eKnob:
+            midi_cc = static_cast<uint8_t>(raw * 127 / (cali_raw_max - cali_raw_min));
             break;
-        }
         case eButton:
             midi_cc = static_cast<uint8_t>(raw >= BTN_RAW_THRETHOLD ? 127 : 0);
             break;
@@ -81,7 +78,7 @@ void Controller::input_loop() {
                 auto raw = cfg_.faders[i]->read();
                 auto new_cc = to_midi_cc(eFader, raw);
                 if(new_cc != prev_fader_cc_[i]) {
-                    ESP_LOGI("MIDI out", "fader %d raw=%4d, val=%3d", i, raw, new_cc);
+                    // ESP_LOGI("MIDI out", "fader %d raw=%4d, val=%3d", i, raw, new_cc);
                     MidiEvent ev{MidiEvent::Type::CC, MIDI_CHANNEL,
                                  static_cast<uint8_t>(CC_FADER_1 + i), new_cc};
                     xQueueSend(cfg_.midi_queue, &ev, 0);
