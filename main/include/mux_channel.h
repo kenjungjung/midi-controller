@@ -2,19 +2,21 @@
 #include "analog_input.h"
 #include "mux_controller.h"
 
-/** @brief MuxController の1チャンネルを IAnalogInput として公開するラッパー */
+/** @brief MuxController の1チャンネル（X or Y セクション）を IAnalogInput として公開するラッパー */
 class MuxChannel : public IAnalogInput {
 public:
-    /** @brief コントローラーとチャンネルインデックスを指定する
-     *  @param ctrl   共有 MuxController
-     *  @param ch     マルチプレクサチャンネル（0–3）
+    /** @brief コントローラー・チャンネル・セクションを指定する
+     *  @param ctrl  共有 MuxController
+     *  @param bus   MuxBus::X または MuxBus::Y
+     *  @param ch    マルチプレクサチャンネル（0–3）
      */
-    MuxChannel(MuxController& ctrl, uint8_t ch);
+    MuxChannel(MuxController& ctrl, MuxBus bus, uint8_t ch);
 
     /** @brief チャンネルを選択してキャリブレーション済み値（0–4095）を返す */
     uint16_t read() override;
 
 private:
     MuxController& ctrl_;
+    MuxBus         bus_;
     uint8_t        ch_;
 };

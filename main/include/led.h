@@ -45,5 +45,5 @@ public:
 
 private:
     struct led_strip_t* strip_ = nullptr; ///< led_strip ドライバハンドル
-    std::array<uint8_t, NUM_FADERS> volumes_ = {0};
+    std::array<uint8_t, NUM_LEDS> volumes_ = {};
 };

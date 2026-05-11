@@ -1,6 +1,7 @@
 set(SOURCES
     src/main.cpp
     src/adc_unit.cpp
+    src/adc2_unit.cpp
     src/analog_input.cpp
     src/mux_controller.cpp
     src/mux_channel.cpp

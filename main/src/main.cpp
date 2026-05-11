@@ -5,6 +5,7 @@
 #include "usb_descriptors.h"
 #include "config.h"
 #include "adc_unit.h"
+#include "adc2_unit.h"
 #include "analog_input.h"
 #include "mux_controller.h"
 #include "mux_channel.h"
@@ -61,10 +62,23 @@ extern "C" void app_main(void) {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
     
     static Adc1Unit         adc1;
-    static MuxController    mux(adc1, ADC_CH_MUX_X, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
-    static MuxChannel       fader(mux, 0);
-    static MuxChannel       knob1(mux, 1);
-    static MuxChannel       btn(mux, 2);
+    static Adc2Unit         adc2;
+    // U2: ポテンショメータ RV5-RV8（X-COM=GPIO5/CH4, Y-COM=GPIO6/CH5）
+    static MuxController    muxU2(adc1, ADC_CH_U2_X, ADC_CH_U2_Y, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
+    // U5: ポテンショメータ RV9-RV12（Y-COM=GPIO14/ADC2_CH3、X側は未接続）
+    static MuxController    muxU5(adc2, ADC_CH_U5_X, ADC_CH_U5_Y, ADC_ATTEN, PIN_U5_A, PIN_U5_B);
+    // U2 Xセクション: X0=RV7, X1=RV6, X2=RV5, X3=RV8
+
+    static MuxChannel       knob_RV5(muxU2, MuxBus::X, 2);
+    static MuxChannel       knob_RV6(muxU2, MuxBus::X, 1);
+    static MuxChannel       knob_RV7(muxU2, MuxBus::X, 0);
+    static MuxChannel       knob_RV8(muxU2, MuxBus::X, 3);
+
+    static MuxChannel       knob_RV9(muxU5, MuxBus::Y, 0);
+    static MuxChannel       knob_RV10(muxU5, MuxBus::Y, 2);
+    static MuxChannel       knob_RV11(muxU5, MuxBus::Y, 1);
+    static MuxChannel       knob_RV12(muxU5, MuxBus::Y, 3);
+
     static LedManager       led;
     static UsbMidiSender    sender;
     static Display          display;
@@ -72,9 +86,9 @@ extern "C" void app_main(void) {
     midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
 
     static ControllerConfig cfg = {
-        .faders   = { &fader },
-        .knobs    = { &knob1 },// { &knob1, &knob2, &knob3 },
-        .buttons  = { &btn },
+        .faders   = {},
+        .knobs    = { &knob_RV5, &knob_RV6, &knob_RV7, &knob_RV8, &knob_RV9, &knob_RV10, &knob_RV11, &knob_RV12 },
+        .buttons  = {},
         .led      = &led,
         .display  = &display,
         .sender   = &sender,

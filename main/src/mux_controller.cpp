@@ -1,28 +1,41 @@
 #include "mux_controller.h"
+#include "iadc_unit.h"
 #include "esp_rom_sys.h"
 #include "esp_log.h"
 #include "config.h"
 
 static const char* TAG = "MuxController";
 
-MuxController::MuxController(Adc1Unit& unit, adc_channel_t x, adc_atten_t atten,
-                             gpio_num_t pin_a, gpio_num_t pin_b)
-    : unit_(unit), cali_handle_(nullptr), cali_valid_(false),
-      x_(x), pin_a_(pin_a), pin_b_(pin_b)
+static adc_cali_handle_t create_cali(adc_unit_t unit_id, adc_channel_t ch, adc_atten_t atten, bool& valid)
 {
-    raws_prev_.fill(0xFFF);
-    unit_.config_channel(x, atten);
-
-    adc_cali_curve_fitting_config_t cali_cfg = {};
-    cali_cfg.unit_id  = ADC_UNIT_1;
-    cali_cfg.chan     = x;
-    cali_cfg.atten    = atten;
-    cali_cfg.bitwidth = ADC_BITWIDTH_12;
-    esp_err_t ret = adc_cali_create_scheme_curve_fitting(&cali_cfg, &cali_handle_);
-    cali_valid_ = (ret == ESP_OK);
-    if (!cali_valid_) {
-        ESP_LOGW(TAG, "calibration unavailable, using raw values");
+    adc_cali_handle_t handle = nullptr;
+    adc_cali_curve_fitting_config_t cfg = {};
+    cfg.unit_id  = unit_id;
+    cfg.chan     = ch;
+    cfg.atten    = atten;
+    cfg.bitwidth = ADC_BITWIDTH_12;
+    esp_err_t ret = adc_cali_create_scheme_curve_fitting(&cfg, &handle);
+    valid = (ret == ESP_OK);
+    if (!valid) {
+        ESP_LOGW(TAG, "calibration unavailable for ch%d, using raw values", ch);
     }
+    return handle;
+}
+
+MuxController::MuxController(IAdcUnit& unit, adc_channel_t x, adc_channel_t y,
+                             adc_atten_t atten, gpio_num_t pin_a, gpio_num_t pin_b)
+    : unit_(unit), cali_x_(nullptr), cali_y_(nullptr),
+      cali_x_valid_(false), cali_y_valid_(false),
+      x_(x), y_(y), pin_a_(pin_a), pin_b_(pin_b)
+{
+    raws_prev_x_.fill(0xFFF);
+    raws_prev_y_.fill(0xFFF);
+
+    unit_.config_channel(x, atten);
+    unit_.config_channel(y, atten);
+
+    cali_x_ = create_cali(unit.unit_id(), x, atten, cali_x_valid_);
+    cali_y_ = create_cali(unit.unit_id(), y, atten, cali_y_valid_);
 
     gpio_config_t io_cfg = {};
     io_cfg.pin_bit_mask = (1ULL << pin_a) | (1ULL << pin_b);
@@ -37,9 +50,8 @@ MuxController::MuxController(Adc1Unit& unit, adc_channel_t x, adc_atten_t atten,
 
 MuxController::~MuxController()
 {
-    if (cali_valid_) {
-        adc_cali_delete_scheme_curve_fitting(cali_handle_);
-    }
+    if (cali_x_valid_) adc_cali_delete_scheme_curve_fitting(cali_x_);
+    if (cali_y_valid_) adc_cali_delete_scheme_curve_fitting(cali_y_);
 }
 
 void MuxController::select(uint8_t mux_ch) const
@@ -48,22 +60,32 @@ void MuxController::select(uint8_t mux_ch) const
     gpio_set_level(pin_b_, (mux_ch >> 1) & 1);
 }
 
-uint16_t MuxController::read(uint8_t mux_ch)
+uint16_t MuxController::read_com(adc_channel_t ch, adc_cali_handle_t cali, bool cali_valid,
+                                  std::array<int, NUM_MUC_CH_MAX>& raws_prev, uint8_t mux_ch)
+{
+    int raw = unit_.read_raw(ch);
+
+    if (std::abs(raws_prev[mux_ch] - raw) <= RAW_DEMANDED) {
+        return raws_prev[mux_ch];
+    }
+    raws_prev[mux_ch] = raw;
+
+    if (cali_valid) {
+        int voltage_mv = 0;
+        adc_cali_raw_to_voltage(cali, raw, &voltage_mv);
+        return static_cast<uint16_t>(voltage_mv * 4095 / 3300);
+    }
+    return static_cast<uint16_t>(raw);
+}
+
+uint16_t MuxController::read(MuxBus bus, uint8_t mux_ch)
 {
     select(mux_ch);
     esp_rom_delay_us(MUX_SETTLE_US);
 
-    int raw = unit_.read_raw(x_);
-
-    if(std::abs(raws_prev_[mux_ch] - raw) <= RAW_DEMANDED) {
-        return raws_prev_[mux_ch];
+    if (bus == MuxBus::X) {
+        return read_com(x_, cali_x_, cali_x_valid_, raws_prev_x_, mux_ch);
+    } else {
+        return read_com(y_, cali_y_, cali_y_valid_, raws_prev_y_, mux_ch);
     }
-    raws_prev_[mux_ch] = raw;
-
-    if (cali_valid_) {
-        int voltage_mv = 0;
-        adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv);
-        return static_cast<uint16_t>(voltage_mv * 4095 / 3300);
-    }
-    return static_cast<uint16_t>(raw);
 }
