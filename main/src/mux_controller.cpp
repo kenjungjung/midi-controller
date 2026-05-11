@@ -65,17 +65,20 @@ uint16_t MuxController::read_com(adc_channel_t ch, adc_cali_handle_t cali, bool 
 {
     int raw = unit_.read_raw(ch);
 
-    if (std::abs(raws_prev[mux_ch] - raw) <= RAW_DEMANDED) {
-        return raws_prev[mux_ch];
-    }
-    raws_prev[mux_ch] = raw;
-
+    int normalized = raw;
     if (cali_valid) {
         int voltage_mv = 0;
         adc_cali_raw_to_voltage(cali, raw, &voltage_mv);
-        return static_cast<uint16_t>(voltage_mv * 4095 / 3300);
+        normalized = voltage_mv * 4095 / 3300;
     }
-    return static_cast<uint16_t>(raw);
+    if (normalized < 0)    normalized = 0;
+    if (normalized > 4095) normalized = 4095;
+
+    if (std::abs(raws_prev[mux_ch] - normalized) <= RAW_THRETHOLD) {
+        return static_cast<uint16_t>(raws_prev[mux_ch]);
+    }
+    raws_prev[mux_ch] = normalized;
+    return static_cast<uint16_t>(normalized);
 }
 
 uint16_t MuxController::read(MuxBus bus, uint8_t mux_ch)

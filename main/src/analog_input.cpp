@@ -33,16 +33,19 @@ AdcAnalogInput::~AdcAnalogInput()
 uint16_t AdcAnalogInput::read()
 {
     int raw = unit_.read_raw(channel_);
-    if(std::abs(raw_prev_ - raw) <= RAW_DEMANDED) {
-        return raw_prev_;
-    }
-    raw_prev_ = raw;
 
-    if (!cali_valid_) {
-        return static_cast<uint16_t>(raw);
+    int normalized = raw;
+    if (cali_valid_) {
+        int voltage_mv = 0;
+        adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv);
+        normalized = voltage_mv * 4095 / 3300;
     }
+    if (normalized < 0)    normalized = 0;
+    if (normalized > 4095) normalized = 4095;
 
-    int voltage_mv = 0;
-    adc_cali_raw_to_voltage(cali_handle_, raw, &voltage_mv);
-    return static_cast<uint16_t>(voltage_mv);
+    if (std::abs(raw_prev_ - normalized) <= RAW_THRETHOLD) {
+        return static_cast<uint16_t>(raw_prev_);
+    }
+    raw_prev_ = normalized;
+    return static_cast<uint16_t>(normalized);
 }
