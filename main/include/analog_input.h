@@ -3,7 +3,7 @@
 #include "esp_adc/adc_oneshot.h"
 #include "esp_adc/adc_cali.h"
 #include "esp_adc/adc_cali_scheme.h"
-#include "adc_unit.h"
+#include "adc1_unit.h"
 
 /** @brief アナログ入力の抽象インターフェース */
 class IAnalogInput {

@@ -4,7 +4,7 @@
 #include "tinyusb.h"
 #include "usb_descriptors.h"
 #include "config.h"
-#include "adc_unit.h"
+#include "adc1_unit.h"
 #include "adc2_unit.h"
 #include "analog_input.h"
 #include "mux_controller.h"
