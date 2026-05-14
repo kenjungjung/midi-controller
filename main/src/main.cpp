@@ -63,16 +63,28 @@ extern "C" void app_main(void) {
     
     static Adc1Unit         adc1;
     static Adc2Unit         adc2;
-    // U2: ポテンショメータ RV5-RV8（X-COM=GPIO5/CH4, Y-COM=GPIO6/CH5）
+
     static MuxController    muxU2(adc1, ADC_CH_U2_X, ADC_CH_U2_Y, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
-    // U5: ポテンショメータ RV9-RV12（Y-COM=GPIO14/ADC2_CH3、X側は未接続）
+    static MuxController    muxU3(adc1, ADC_CH_U3_X, ADC_CH_U3_Y, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
+    static MuxController    muxU4(adc1, ADC_CH_U4_X, ADC_CH_U4_Y, ADC_ATTEN, PIN_MUX_A, PIN_MUX_B);
     static MuxController    muxU5(adc2, ADC_CH_U5_X, ADC_CH_U5_Y, ADC_ATTEN, PIN_U5_A, PIN_U5_B);
-    // U2 Xセクション: X0=RV7, X1=RV6, X2=RV5, X3=RV8
+    // U2 上ノブ
     static MuxChannel       knob_RV5(muxU2, MuxBus::X, 2, 0, 3972);
     static MuxChannel       knob_RV6(muxU2, MuxBus::X, 1, 0, 3972);
     static MuxChannel       knob_RV7(muxU2, MuxBus::X, 0, 0, 3972);
     static MuxChannel       knob_RV8(muxU2, MuxBus::X, 3, 0, 3972);
-    // U5 Yセクション: Y0=RV9, Y1=RV11, Y2=RV10, Y3=RV12
+
+    // U4 下フェーダー
+    static MuxChannel       fader_RV17(muxU4, MuxBus::X, 2, 0, 3972);
+    static MuxChannel       fader_RV18(muxU4, MuxBus::X, 1, 0, 3972);
+    static MuxChannel       fader_RV19(muxU4, MuxBus::X, 0, 0, 3972);
+    static MuxChannel       fader_RV20(muxU4, MuxBus::X, 3, 0, 3972);
+    static MuxChannel       fader_RV21(muxU4, MuxBus::Y, 0, 0, 3972);
+    static MuxChannel       fader_RV22(muxU4, MuxBus::Y, 2, 0, 3972);
+    static MuxChannel       fader_RV23(muxU4, MuxBus::Y, 1, 0, 3972);
+    static MuxChannel       fader_RV24(muxU4, MuxBus::Y, 3, 0, 3972);
+
+    // U5 下ノブ
     static MuxChannel       knob_RV9 (muxU5, MuxBus::Y, 0, 0, 3872);
     static MuxChannel       knob_RV10(muxU5, MuxBus::Y, 2, 0, 3872);
     static MuxChannel       knob_RV11(muxU5, MuxBus::Y, 1, 0, 3872);
@@ -85,7 +97,8 @@ extern "C" void app_main(void) {
     midi_queue = xQueueCreate(MIDI_QUEUE_LEN, sizeof(MidiEvent));
 
     static ControllerConfig cfg = {
-        .faders   = {},
+        .faders   = { &fader_RV17, &fader_RV18, &fader_RV19, &fader_RV20, 
+                      &fader_RV21, &fader_RV22, &fader_RV23, &fader_RV24 },
         .knobs    = { &knob_RV5, &knob_RV6, &knob_RV7, &knob_RV8,
                       &knob_RV9, &knob_RV10, &knob_RV11, &knob_RV12 },
         .buttons  = {},
