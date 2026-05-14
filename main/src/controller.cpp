@@ -2,6 +2,7 @@
 #include "config.h"
 #include "led.h"
 #include <cstdlib>
+#include <cmath>
 #include "freertos/task.h"
 #include "esp_log.h"
 
@@ -20,7 +21,13 @@ static uint8_t to_midi_cc(AdcType eType, uint16_t raw) {
     uint8_t midi_cc = 0;
 
     switch(eType){
-        case eFader:
+        case eFader: {
+            raw = cali_raw_max - raw;  // 逆向きに回路設計しちゃったので逆転させる
+            float normalized = static_cast<float>(raw - cali_raw_min) / (cali_raw_max - cali_raw_min);
+            normalized = std::pow(normalized, FADER_CURVE);
+            midi_cc = static_cast<uint8_t>(normalized * 127.0f + 0.5f);
+            break;
+        }
         case eKnob:
             midi_cc = static_cast<uint8_t>(raw * 127 / (cali_raw_max - cali_raw_min));
             break;
